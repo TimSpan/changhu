@@ -1,0 +1,15 @@
+{
+  "include": [
+    "src",
+    "global.d.ts"
+  ],
+  "extends": "@react-native/typescript-config",
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": [
+        "*"
+      ]
+    },
+  }
+}
