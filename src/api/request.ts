@@ -1,58 +1,121 @@
-import axios, {AxiosResponse} from 'axios';
-import {useAuthStore} from '../stores/auth';
+import axios, {
+  AxiosError,
+  type AxiosInstance,
+  type AxiosRequestConfig,
+  type AxiosResponse,
+} from 'axios';
+import {URL} from '@/common';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Alert} from 'react-native';
-import {URL} from '@/common';
-export const api = axios.create({
+const axiosConfig: AxiosRequestConfig = {
   baseURL: URL,
   timeout: 10000,
   timeoutErrorMessage: '请求超时......',
-});
+};
 
-api.interceptors.request.use(
-  async config => {
-    config.headers.set('Client-Type', 'hand_device');
-    const token = await AsyncStorage.getItem('token');
-    const tokenName = await AsyncStorage.getItem('tokenName');
-    if (token && tokenName) {
-      config.headers.set(tokenName, token);
-    }
-    // Axios 拦截器不是 React 组件或 Hook 内部，它是普通 JS 函数，因此不能用 Hook。const { tokenName, token } = useAuthStore();解决办法：不要直接用 Hook\通过 AsyncStorage 或者 store 的 getState() 方法 访问状态
-    // console.log('请求头:', config.headers);
-    // console.log('请求参数:', config.params);
-    // console.log('请求体:', config.data);
-    return config;
-  },
-  error => Promise.reject(error),
-);
+class RequestHttp {
+  service: AxiosInstance;
+  public constructor(config: AxiosRequestConfig) {
+    this.service = axios.create(config);
+    //1.添加请求拦截
+    this.service.interceptors.request.use(
+      async config => {
+        config.headers.set('Client-Type', 'hand_device');
+        const token = await AsyncStorage.getItem('token');
+        const tokenName = await AsyncStorage.getItem('tokenName');
+        if (token && tokenName) {
+          config.headers.set(tokenName, token);
+        }
+        return config;
+      },
+      async (error: AxiosError): Promise<string> => {
+        return Promise.reject(error);
+      },
+    );
+    //2.添加响应拦截
+    this.service.interceptors.response.use(
+      async (response: AxiosResponse): Promise<any> => {
+        const jsonResult: JsonResult<unknown> = response.data;
+        if (jsonResult && jsonResult.code !== 200) {
+          if (
+            [-1].includes(jsonResult.code) ||
+            [402].includes(jsonResult.code)
+          ) {
+            //清除登录信息
+            //跳转登录页
+            Alert.alert(jsonResult.message);
+            await AsyncStorage.removeItem('token');
+            await AsyncStorage.removeItem('tokenName');
+            await AsyncStorage.removeItem('myproject');
+          }
 
-api.interceptors.response.use(
-  // response => response.data,
-  async (response: AxiosResponse): Promise<any> => {
-    const jsonResult: JsonResult<unknown> = response.data;
-    if (jsonResult && jsonResult.code !== 200) {
-      //todo 一些特定的错误需要重新登录
-      if ([-1].includes(jsonResult.code) || [402].includes(jsonResult.code)) {
-        useAuthStore.getState().logout();
-      }
-      Alert.alert(jsonResult.message);
-      return Promise.reject(jsonResult);
-    }
-    return Promise.resolve(jsonResult);
-  },
-  error => {
-    console.error('_________________________ ~ error:', error);
+          return Promise.reject(jsonResult);
+        }
+        return Promise.resolve(jsonResult);
+      },
+      async (error: AxiosError): Promise<string> => {
+        console.log('_________________________ ~ error:', error);
+        if (error.code === 'ECONNABORTED') {
+          Alert.alert('网络错误类型：', '请求超时，请检查网络连接');
+        } else if (error.message.includes('AxiosError: Network Error')) {
+          Alert.alert('网络错误类型：', '网络连接失败，请检查网络环境');
+        } else if (error.response) {
+          console.log(error.response);
 
-    // 这里能捕获各种错误：超时 / 网络错误 / 服务端错误
-    if (error.code === 'ECONNABORTED') {
-      Alert.alert('提示', '请求超时，请检查网络连接');
-    } else if (error.message.includes('Network Error')) {
-      Alert.alert('提示', '网络连接失败，请确认是否连上局域网');
-    } else if (error.response) {
-      Alert.alert('错误', `服务器返回错误：${error.response.status}`);
-    } else {
-      Alert.alert('错误', '未知错误，请稍后再试');
-    }
-    return Promise.reject(error);
-  },
-);
+          Alert.alert(
+            '网络错误类型：',
+            `服务器返回错误：${error.response.status}`,
+          );
+        } else {
+          Alert.alert('网络错误类型：', '未知错误，请稍后再试');
+        }
+        return Promise.reject(error);
+      },
+    );
+  }
+
+  /**
+   *  常用请求方法封装
+   */
+  get<T>(
+    url: string,
+    params?: object,
+    _object: AxiosRequestConfig = {},
+  ): Promise<JsonResult<T>> {
+    return this.service.get(url, {params, ..._object});
+  }
+
+  post<T>(
+    url: string,
+    params?: object | object[],
+    _object: AxiosRequestConfig = {},
+  ): Promise<JsonResult<T>> {
+    return this.service.post(url, params, _object);
+  }
+
+  put<T>(
+    url: string,
+    params?: object | object[],
+    _object: AxiosRequestConfig = {},
+  ): Promise<JsonResult<T>> {
+    return this.service.put(url, params, _object);
+  }
+
+  delete<T>(
+    url: string,
+    params?: object,
+    _object: AxiosRequestConfig = {},
+  ): Promise<JsonResult<T>> {
+    return this.service.delete(url, {params, ..._object});
+  }
+
+  download(
+    url: string,
+    params?: object,
+    _object: AxiosRequestConfig = {},
+  ): Promise<BlobPart> {
+    return this.service.post(url, params, {..._object, responseType: 'blob'});
+  }
+}
+
+export const api = new RequestHttp(axiosConfig);

@@ -1,5 +1,3 @@
-// 事件上报
-
 import {api} from '@/api/request';
 import {useEffect, useState} from 'react';
 import {launchCamera} from 'react-native-image-picker';
@@ -24,10 +22,14 @@ import {
   getPreSignedUrl,
   getPreSignedUrlFromKey,
 } from '@/utils/upload';
+import LoadingOverlay from '@/components/LoadingOverlay';
 const {width} = Dimensions.get('window');
 export const ReportScreen = () => {
   const {myProject} = useProject();
   const [remark, setRemark] = useState('');
+
+  const [title, setTitle] = useState<string>('照片上传中...');
+  const [activityLoading, setActivityLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedType, setSelectedType] = useState<Option | null>(null);
   const [eventTypeList, setEventTypeList] = useState<Option[]>([]);
@@ -38,10 +40,10 @@ export const ReportScreen = () => {
   const [videoObjectKey, setVideoObjectKey] = useState<string | null>(null);
 
   const sysDictPager = async () => {
-    const resp = await api.get('/management/sys/dict/sysDictGroupCode', {
-      params: {sysDictGroupCode: 'projectEvent'},
-    });
-    console.log('_________________________ ~ sysDictPager ~ resp:', resp);
+    const resp = await api.get<Option[]>(
+      '/management/sys/dict/sysDictGroupCode',
+      {sysDictGroupCode: 'projectEvent'},
+    );
     setEventTypeList(resp.data);
   };
 
@@ -52,47 +54,28 @@ export const ReportScreen = () => {
   const takePhoto = async () => {
     launchCamera({mediaType: 'photo', saveToPhotos: true}, async response => {
       if (!response.assets?.[0]) return;
-
       const asset = response.assets[0];
       const {uri, fileName, type} = asset;
       if (!uri) return;
-
       try {
-        // 1. 生成文件名（也可以直接用 fileName）
+        setTitle('照片上传中...');
+        setActivityLoading(true);
         const uploadName = fileName || generateFileName(uri);
-
-        // 2. 获取预签名 URL
         const {objectKey, preSignedUrl} = await getPreSignedUrl(
           uploadName,
           'your-parent-dir',
         );
-
-        // 3. 上传到 MinIO
         const res = await fetch(uri);
         const blob = await res.blob();
-
         await fetch(preSignedUrl, {
           method: 'PUT',
           body: blob,
           headers: {'Content-Type': type || 'application/octet-stream'},
         });
-
-        // 4. 获取回显地址
         const previewUrl = await getPreSignedUrlFromKey(objectKey);
-        console.log(
-          '_________________________ ~ takePhoto ~ previewUrl:',
-          previewUrl,
-        );
-
-        // 5. 存到 state
         setImgList(prev => [...prev, previewUrl]);
         setObjectKey(prev => [...prev, objectKey]);
-
-        console.info(
-          '上传成功，【objectKey、回显 URL】',
-          objectKey,
-          previewUrl,
-        );
+        setActivityLoading(false);
       } catch (err) {
         console.error('上传失败', err);
       }
@@ -102,56 +85,45 @@ export const ReportScreen = () => {
     setImgList(prev => prev.filter((_, i) => i !== index));
   };
 
-  const recordVideo = () => {
+  const takeVideo = () => {
     launchCamera({mediaType: 'video', saveToPhotos: true}, async response => {
       if (!response.assets?.[0]) return;
-
       const asset = response.assets[0];
       const {uri, fileName, type} = asset;
       if (!uri) return;
-
       try {
-        // 1. 生成文件名（也可以直接用 fileName）
+        setTitle('视频上传中...');
+        setActivityLoading(true);
         const uploadName = fileName || generateFileName(uri);
-
-        // 2. 获取预签名 URL
         const {objectKey, preSignedUrl} = await getPreSignedUrl(
           uploadName,
           'your-parent-dir',
         );
-
-        // 3. 上传到 MinIO
         const res = await fetch(uri);
         const blob = await res.blob();
-
         await fetch(preSignedUrl, {
           method: 'PUT',
           body: blob,
           headers: {'Content-Type': type || 'application/octet-stream'},
         });
-
-        // 4. 获取回显地址
         const previewUrl = await getPreSignedUrlFromKey(objectKey);
-        console.log(
-          '_________________________ ~ takePhoto ~ previewUrl:',
-          previewUrl,
-        );
-
-        // 5. 存到 state
         setVideoUri(previewUrl);
         setVideoObjectKey(objectKey);
-
-        console.info(
-          '上传成功，【objectKey、回显 URL】',
-          objectKey,
-          previewUrl,
-        );
+        setActivityLoading(false);
       } catch (err) {
         console.error('上传失败', err);
       }
     });
   };
 
+  function clear() {
+    setSelectedType(null);
+    setImgList([]);
+    setObjectKey([]);
+    setVideoUri(null);
+    setVideoObjectKey(null);
+    setRemark('');
+  }
   const submit = function () {
     console.log('useProject().myProject;', myProject);
     setLoading(true);
@@ -191,13 +163,11 @@ export const ReportScreen = () => {
     api
       .post('/wechat/signPunch/eventReporting', {...params})
       .then(res => {
-        console.log('_________________________ ~ submit ~ res:', res);
-        // @ts-ignore
         if (res.code === 200) {
           Alert.alert('事件上报成功');
+          clear();
           setLoading(false);
         } else {
-          // @ts-ignore
           Alert.alert(res?.message);
           setLoading(false);
         }
@@ -240,7 +210,6 @@ export const ReportScreen = () => {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => {
-                console.log(111);
                 takePhoto();
               }}
               style={styles.upLoadStyle}>
@@ -287,8 +256,7 @@ export const ReportScreen = () => {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => {
-                console.log(222);
-                recordVideo();
+                takeVideo();
               }}
               style={styles.upLoadStyle}>
               <Ionicons name={'videocam-outline'} size={50} color={'#aaa'} />
@@ -326,8 +294,6 @@ export const ReportScreen = () => {
             onChange={val => setSelectedType(val)} // 子组件传回值
           />
         )}
-
-        {/* <View style={{backgroundColor: '#fff', height: 400}}></View> */}
       </ScrollView>
 
       <TouchableOpacity onPress={submit}>
@@ -339,6 +305,8 @@ export const ReportScreen = () => {
           )}
         </View>
       </TouchableOpacity>
+
+      <LoadingOverlay visible={activityLoading} title={title} />
     </View>
   );
 };

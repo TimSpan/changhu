@@ -11,6 +11,7 @@ import {RootStackParamList} from './types';
 import {Home} from '@/screens/Tabs/Home';
 import {Center} from '@/screens/Tabs/Center';
 import {User} from '@/screens/Tabs/User';
+import {useProject} from '@/stores/userProject';
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 function HomeStackScreen() {
@@ -103,23 +104,26 @@ function MainTabs() {
   );
 }
 
-// RootStack
 export function AppNavigation() {
   const {token, restoreToken} = useAuthStore();
+  const {myProject, _hasHydrated} = useProject();
   const [loading, setLoading] = React.useState(true);
-
   React.useEffect(() => {
+    // 等 token 恢复
     restoreToken().finally(() => setLoading(false));
   }, []);
-
-  if (loading) {
+  // React.useEffect(() => {
+  //   if (_hasHydrated) {
+  //     console.log('rehydrated myProject:', myProject);
+  //   }
+  // }, [_hasHydrated, myProject]);
+  if (loading || !_hasHydrated) {
     return <SplashScreen />;
   }
 
   return (
-    // screenOptions={{ headerShown: false }} 隐藏头部
     <RootStack.Navigator>
-      {token ? (
+      {token && myProject ? (
         <>
           <RootStack.Screen
             name="MainTabs"

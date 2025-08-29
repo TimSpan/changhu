@@ -12,7 +12,7 @@ export function CustomIcon(props: any) {
     >
       <G
         transform="translate(0,640) scale(0.1,-0.1)"
-        fill="#075eec"
+        fill="#2080F0"
         stroke="none"
       >
         <Path

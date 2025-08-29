@@ -16,25 +16,22 @@ import {encryptStr} from '@/utils';
 import {api} from '@/api/request';
 import {useAuthStore} from '@/stores/auth';
 import {useProject} from '@/stores/userProject';
-
 import {Toast as UseToast} from '@/components/Toast';
-
+import {AxiosError} from 'axios';
 export default function Login() {
   const [toast, setToast] = useState('');
   const {setMyProject} = useProject();
   const setToken = useAuthStore(state => state.setToken);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    tel: '13125648522',
+    tel: '17346625362',
+    // tel: '18711712226',
     password: '123456',
   });
   const [errors, setErrors] = useState({tel: '', password: ''});
-
   const validate = () => {
     let valid = true;
     let newErrors = {tel: '', password: ''};
-
-    // 手机号校验（简单示例：11位数字）
     if (!form.tel) {
       newErrors.tel = '请输入手机号';
       valid = false;
@@ -42,8 +39,6 @@ export default function Login() {
       newErrors.tel = '手机号格式不正确';
       valid = false;
     }
-
-    // 密码校验（长度 >= 6）
     if (!form.password) {
       newErrors.password = '请输入密码';
       valid = false;
@@ -51,7 +46,6 @@ export default function Login() {
       newErrors.password = '密码长度至少6位';
       valid = false;
     }
-
     setErrors(newErrors);
     return valid;
   };
@@ -64,26 +58,24 @@ export default function Login() {
           tel: form.tel,
           password: encryptedText,
         });
-        console.log('_________________________ ~ login ~ res:', res);
-        // setTimeout(() => {
-        setToken(res.data.tokenInfo.tokenValue, res.data.tokenInfo.tokenName);
+        console.log('🍎 ~ login ~ res:', res);
+        if (res) {
+          setToken(res.data.tokenInfo.tokenValue, res.data.tokenInfo.tokenName);
+        }
 
         const result = await api.get<MyProject>('/wechat/common/getMyProject');
-        setMyProject(result.data);
-        console.log(
-          '_________________________ ~ getMyProject ~ result:',
-          result,
-        );
-
-        // }, 2000);
+        console.log('🍎 ~ login ~ result:', result);
+        if (result) {
+          setMyProject(result.data);
+        }
       } catch (error) {
-        console.error('_________________________ ~ login ~ error:', error);
+        const err = error as AxiosError<JsonResult<any>>;
+        console.log('🍎 ~ login ~ error:', error);
+        Alert.alert('提示', err.message);
       } finally {
         setLoading(false);
       }
     } else {
-      // Alert.alert('校验失败');
-      // UseToast('校验失败！');
       Toast.show({
         type: 'error',
         text1: '提示',
@@ -103,7 +95,7 @@ export default function Login() {
           />
 
           <Text style={styles.title}>
-            欢迎登录<Text style={{color: '#075eec'}}>隆吉安保</Text>
+            欢迎登录<Text style={{color: '#2080F0'}}>隆吉安保</Text>
           </Text>
         </View>
 
@@ -153,7 +145,6 @@ export default function Login() {
           <View style={styles.formAction}>
             <TouchableOpacity onPress={login}>
               <View style={styles.btn}>
-                {/* <Text style={styles.btnText}>登录</Text> */}
                 {loading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
@@ -212,7 +203,7 @@ const styles = StyleSheet.create({
   formLink: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#075eec',
+    color: '#2080F0',
     textAlign: 'center',
   },
   formFooter: {
@@ -254,8 +245,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderWidth: 1,
-    backgroundColor: '#075eec',
-    borderColor: '#075eec',
+    backgroundColor: '#2080F0',
+    borderColor: '#2080F0',
   },
   btnText: {
     fontSize: 18,
