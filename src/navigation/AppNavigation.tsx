@@ -1,75 +1,70 @@
 // AppNavigation.tsx
 import React from 'react';
+import {screens} from './screens';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {AntDesign} from '@react-native-vector-icons/ant-design';
-import HomeScreen from '@/screens/HomeScreen';
-import CameraScreen from '@/screens/CameraScreen';
-import VideoScreen from '@/screens/VideoScreen';
-import TestScreen from '@/screens/TestScreen';
 import SplashScreen from '@/screens/SplashScreen';
 import LoginScreen from '@/screens/LoginScreen';
 import {useAuthStore} from '@/stores/auth';
-import {Index2} from '@/screens/test/index2';
-import {Index3} from '@/screens/test/index3';
 import {RootStackParamList} from './types';
-import ShowComponents from '@/screens/ShowComponents';
-import ImagePreview from '@/screens/ImagePreview';
-// import { BottomNavigation } from 'react-native-paper';
-// import App from './BottomNavigation';
+import {Home} from '@/screens/Tabs/Home';
+import {Center} from '@/screens/Tabs/Center';
+import {User} from '@/screens/Tabs/User';
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
-// const HomeStack = createNativeStackNavigator();
-
-// Tab 内 HomeStack
 function HomeStackScreen() {
   return (
     <RootStack.Navigator
       screenOptions={{
-        headerStyle: {backgroundColor: '#007bff'},
+        headerShown: false,
+        headerStyle: {backgroundColor: '#2080F0'},
         headerTintColor: '#fff',
+        headerTitleAlign: 'center',
       }}>
       <RootStack.Screen
-        name="HomeMain"
-        component={HomeScreen}
-        options={{title: '功能首页'}}
+        name="Home"
+        component={Home}
+        options={{title: '打卡'}}
       />
     </RootStack.Navigator>
   );
 }
 
-function Index2_() {
+function CenterStackScreen() {
   return (
     <RootStack.Navigator
       screenOptions={{
-        headerStyle: {backgroundColor: '#007bff'},
+        headerStyle: {backgroundColor: '#2080F0'},
         headerTintColor: '#fff',
+        headerTitleAlign: 'center',
+        headerShown: false,
       }}>
       <RootStack.Screen
-        name="Index2"
-        component={Index2}
-        options={{title: 'index2'}}
+        name="Center"
+        component={Center}
+        options={{title: '功能中心'}}
       />
     </RootStack.Navigator>
   );
 }
-function Index3_() {
+function UserStackScreen() {
   return (
     <RootStack.Navigator
       screenOptions={{
-        headerStyle: {backgroundColor: '#007bff'},
+        headerShown: false,
+        headerStyle: {backgroundColor: '#2080F0'},
         headerTintColor: '#fff',
+        headerTitleAlign: 'center',
       }}>
       <RootStack.Screen
-        name="Index3"
-        component={Index3}
-        options={{title: 'index3'}}
+        name="User"
+        component={User}
+        options={{title: '我的'}}
       />
     </RootStack.Navigator>
   );
 }
-
-// TabNavigator
 
 function MainTabs() {
   return (
@@ -78,30 +73,31 @@ function MainTabs() {
         headerShown: false,
         tabBarIcon: ({color, size}) => {
           let iconName: any = 'home';
-          if (route.name === 'HomeTab') iconName = 'home';
-          else if (route.name === 'CameraTab') iconName = 'camera';
-          else if (route.name === 'VideoTab') iconName = 'play-square';
-          else if (route.name === 'TestTab') iconName = 'java-script';
+          if (route.name === 'home') iconName = 'home';
+          else if (route.name === 'center') iconName = 'appstore';
+          else if (route.name === 'user') iconName = 'user';
           return <AntDesign name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#007bff',
+        tabBarActiveTintColor: '#2080F0',
         tabBarInactiveTintColor: 'gray',
+        tabBarLabelStyle: {fontSize: 16}, // 调大字体
+        tabBarStyle: {height: 60}, // 调高整个 tabBar
       })}>
-      <Tab.Screen
-        name="HomeTab"
+      {/* <Tab.Screen
+        name="home"
         component={HomeStackScreen}
-        options={{title: '首页'}}
-      />
+        options={{title: '打卡'}}
+      /> */}
 
       <Tab.Screen
-        name="index2"
-        component={Index2_}
-        options={{title: 'index2'}}
+        name="center"
+        component={CenterStackScreen}
+        options={{title: '功能中心'}}
       />
       <Tab.Screen
-        name="VideoTab"
-        component={Index3_}
-        options={{title: 'index3'}}
+        name="user"
+        component={UserStackScreen}
+        options={{title: '我的'}}
       />
     </Tab.Navigator>
   );
@@ -130,53 +126,15 @@ export function AppNavigation() {
             component={MainTabs}
             options={{headerShown: false}}
           />
-          <RootStack.Screen
-            name="Test"
-            component={TestScreen}
-            options={{
-              title: '接口测试',
-              headerStyle: {backgroundColor: '#007bff'}, // 导航栏背景色
-              headerTintColor: '#fff', // 标题和返回按钮颜色
-            }}
-          />
 
-          <RootStack.Screen
-            name="Camera"
-            component={CameraScreen}
-            options={{
-              title: '拍照',
-              headerStyle: {backgroundColor: '#007bff'}, // 导航栏背景色
-              headerTintColor: '#fff', // 标题和返回按钮颜色
-            }}
-          />
-          <RootStack.Screen
-            name="Video"
-            component={VideoScreen}
-            options={{
-              title: '录像',
-              headerStyle: {backgroundColor: '#007bff'}, // 导航栏背景色
-              headerTintColor: '#fff', // 标题和返回按钮颜色
-            }}
-          />
-          <RootStack.Screen
-            name="ShowComponents"
-            component={ShowComponents}
-            options={{
-              title: '组件展示',
-              headerStyle: {backgroundColor: '#007bff'}, // 导航栏背景色
-              headerTintColor: '#fff', // 标题和返回按钮颜色
-            }}
-          />
-
-          <RootStack.Screen
-            name="ImagePreview"
-            component={ImagePreview}
-            options={{
-              title: '图片预览',
-              headerStyle: {backgroundColor: '#007bff'}, // 导航栏背景色
-              headerTintColor: '#fff', // 标题和返回按钮颜色
-            }}
-          />
+          {screens.map(screen => (
+            <RootStack.Screen
+              key={screen.name}
+              name={screen.name}
+              component={screen.component}
+              options={screen.options}
+            />
+          ))}
         </>
       ) : (
         <RootStack.Screen

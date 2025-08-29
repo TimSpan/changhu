@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Text } from 'react-native';
-import { Button, Portal, Dialog } from 'react-native-paper';
+import {Text} from 'react-native';
+import {Button, Portal, Dialog} from 'react-native-paper';
 
 const ConfirmDialog = ({
   title,
@@ -17,11 +17,10 @@ const ConfirmDialog = ({
 }) => (
   <Portal>
     <Dialog
-      style={{ borderRadius: 0 }}
+      style={{borderRadius: 0, backgroundColor: '#fff'}}
       onDismiss={close}
       visible={visible}
-      dismissable={false}
-    >
+      dismissable={false}>
       <Dialog.Title>{title}</Dialog.Title>
       <Dialog.Content>
         <Text>{text}</Text>

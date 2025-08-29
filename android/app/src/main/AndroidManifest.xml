@@ -1,26 +1,66 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- 访问网络（高德地图需要联网加载瓦片和接口调用） -->
+  <uses-permission android:name="android.permission.INTERNET" />
 
-    <uses-permission android:name="android.permission.INTERNET" />
+  <!-- 粗略定位（基于网络，如 Wi-Fi / 基站定位） -->
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <application
-      android:name=".MainApplication"
+  <!-- 精确定位（基于 GPS 芯片） -->
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+  <!-- 额外的定位指令（部分机型需要，用于辅助定位） -->
+  <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+
+  <!-- 获取网络连接状态（判断是否有网络） -->
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+  <!-- 获取 Wi-Fi 状态（辅助定位用） -->
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+  <!-- 修改 Wi-Fi 状态（辅助定位时可能需要切换 Wi-Fi） -->
+  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
+  <!-- 读取手机状态（高德 SDK 内部可能会用到设备信息做定位优化） -->
+  <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+  <!-- 写入外部存储（地图缓存数据需要） -->
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+  <!-- 读取外部存储（地图缓存数据需要） -->
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+  <!-- 如果 targetSdkVersion >= 30，还要在 <application> 里加： -->
+  <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+
+  <!-- networkSecurityConfig 允许 release 访问局域网 HTTP -->
+  <application
+    android:name=".MainApplication"
+    android:label="@string/app_name"
+    android:icon="@mipmap/ic_launcher"
+    android:roundIcon="@mipmap/ic_launcher_round"
+    android:allowBackup="false"
+    android:theme="@style/AppTheme"
+    android:supportsRtl="true"
+    android:networkSecurityConfig="@xml/network_security_config"
+  >
+
+
+    <!-- 高德地图 Android Key -->
+
+    <meta-data
+      android:name="com.amap.api.v2.apikey"
+      android:value="f1322c6b19b8899992402ae79e4d5ded" />
+    <activity
+      android:name=".MainActivity"
       android:label="@string/app_name"
-      android:icon="@mipmap/ic_launcher"
-      android:roundIcon="@mipmap/ic_launcher_round"
-      android:allowBackup="false"
-      android:theme="@style/AppTheme"
-      android:supportsRtl="true">
-      <activity
-        android:name=".MainActivity"
-        android:label="@string/app_name"
-        android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
-        android:launchMode="singleTask"
-        android:windowSoftInputMode="adjustResize"
-        android:exported="true">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-      </activity>
-    </application>
+      android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
+      android:launchMode="singleTask"
+      android:windowSoftInputMode="adjustResize"
+      android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+  </application>
 </manifest>

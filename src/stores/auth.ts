@@ -1,5 +1,5 @@
 // src/store/auth.ts
-import { create } from 'zustand';
+import {create} from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AuthState {
@@ -16,20 +16,19 @@ export const useAuthStore = create<AuthState>(set => ({
   setToken: async (token: string, tokenName: string) => {
     await AsyncStorage.setItem('token', token);
     await AsyncStorage.setItem('tokenName', tokenName);
-
-    set({ token, tokenName });
+    set({token, tokenName});
   },
   logout: async () => {
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('tokenName');
 
-    set({ token: null });
-    set({ tokenName: null });
+    set({token: null});
+    set({tokenName: null});
   },
   restoreToken: async () => {
     const token = await AsyncStorage.getItem('token');
     const tokenName = await AsyncStorage.getItem('tokenName');
-    set({ token });
-    set({ tokenName });
+    set({token});
+    set({tokenName});
   },
 }));

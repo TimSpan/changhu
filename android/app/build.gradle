@@ -84,6 +84,30 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+       
+
+        // 这是专门控制 C/C++ 编译过程的L:
+        // externalNativeBuild：Gradle 的 DSL，用来告诉 Android 项目如何编译 C/C++ 代码（比如 React Native 的 Reanimated、Hermes、Fresco 等库内部都是 C++ 写的）
+        // cmake {}：表示用 CMake 来管理 C++ 构建
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++17" //给编译器传递参数。这里是 -std=c++17，表示用 C++17 标准来编译。有些库（比如 Reanimated）里会用到 C++17 的特性，否则编译会报错。
+                // 👇 在这里传递参数
+                // arguments "-DANDROID_ABI=arm64-v8a" 
+                // arguments "-DANDROID_ABI=arm64-v8a;armeabi-v7a"
+                //-DANDROID_ABI=arm64-v8a 等价于 set(ANDROID_ABI arm64-v8a)，告诉 CMake：只编 arm64-v8a 这一种架构的 so 库。
+            }
+        }
+    }
+  
+    //   这是控制 最终 APK 的打包方式 的。
+    splits { //splits：Gradle 的功能，允许你把一个 APK 拆成多个不同的变体，比如不同的 ABI、屏幕密度。
+        abi { //abi {}：针对 CPU 架构（Application Binary Interface）。
+            enable true //开启 ABI 拆分功能
+            reset() // 清掉默认的 ABI
+            include "arm64-v8a", "armeabi-v7a"  //指定只打 xxx 的 APK。
+            universalApk true  // 如果设为 true，Gradle 会再生成一个 universal APK（里面包含所有 ABI 的 so 库）。那个 APK 非常大（几十 MB），通常只用于某些应用市场（比如华为、小米要求的“全架构支持”）。你这里设为 false，所以只会生成 arm64-v8a 的单一 APK，体积最小。
+        }
     }
     signingConfigs {
         debug {
@@ -92,19 +116,44 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            if (project.hasProperty('MYAPP_RELEASE_STORE_FILE')) {
+                storeFile file(MYAPP_RELEASE_STORE_FILE)
+                storePassword MYAPP_RELEASE_STORE_PASSWORD
+                keyAlias MYAPP_RELEASE_KEY_ALIAS
+                keyPassword MYAPP_RELEASE_KEY_PASSWORD
+            }
+        }
     }
     buildTypes {
+
+        // ndk {
+        //     abiFilters "armeabi-v7a", "arm64-v8a"
+        // }
         debug {
             signingConfig signingConfigs.debug
         }
         release {
+            // 🚫 跳过 release lint，避免 Windows 下 lintVitalAnalyzeRelease 报错
+            // 作用：只是告诉 Gradle 在打正式包的时候 不要执行 lint 检查。
+            // ✅ 不会影响最终产物（APK/ABB）运行，不会改变代码逻辑、性能，也不会影响是否能访问网络。
+            // 🚫 唯一的影响是：你失去了 lint 对 潜在问题的扫描（比如无用资源、可能的兼容性问题）。
+            // 常见做法：在 RN 项目里，大部分团队都会直接关掉 release lint，因为 RN 本身依赖的库太多，lint 经常误报或阻塞构建。
+            // 👉 所以放心用，不会影响产物，只是少了静态检查。
+            lintOptions {
+                checkReleaseBuilds false
+                abortOnError false
+            }
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
+            signingConfig signingConfigs.release
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+
+  
 }
 
 dependencies {

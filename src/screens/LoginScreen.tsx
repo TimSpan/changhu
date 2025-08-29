@@ -15,29 +15,31 @@ import {CustomIcon} from '@/components/CustomIcon/index';
 import {encryptStr} from '@/utils';
 import {api} from '@/api/request';
 import {useAuthStore} from '@/stores/auth';
+import {useProject} from '@/stores/userProject';
+
 import {Toast as UseToast} from '@/components/Toast';
 
-export default function Example() {
+export default function Login() {
   const [toast, setToast] = useState('');
-
+  const {setMyProject} = useProject();
   const setToken = useAuthStore(state => state.setToken);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    phoneNumber: '18570083528',
+    tel: '13125648522',
     password: '123456',
   });
-  const [errors, setErrors] = useState({phoneNumber: '', password: ''});
+  const [errors, setErrors] = useState({tel: '', password: ''});
 
   const validate = () => {
     let valid = true;
-    let newErrors = {phoneNumber: '', password: ''};
+    let newErrors = {tel: '', password: ''};
 
     // 手机号校验（简单示例：11位数字）
-    if (!form.phoneNumber) {
-      newErrors.phoneNumber = '请输入手机号';
+    if (!form.tel) {
+      newErrors.tel = '请输入手机号';
       valid = false;
-    } else if (!/^1[3-9]\d{9}$/.test(form.phoneNumber)) {
-      newErrors.phoneNumber = '手机号格式不正确';
+    } else if (!/^1[3-9]\d{9}$/.test(form.tel)) {
+      newErrors.tel = '手机号格式不正确';
       valid = false;
     }
 
@@ -58,13 +60,21 @@ export default function Example() {
       setLoading(true);
       const encryptedText = encryptStr(form.password);
       try {
-        const res = await api.post<TokenInfo>('/login/management', {
-          phoneNumber: form.phoneNumber,
+        const res = await api.post<TokenMessage>('/login/handDevice', {
+          tel: form.tel,
           password: encryptedText,
         });
         console.log('_________________________ ~ login ~ res:', res);
         // setTimeout(() => {
-        setToken(res.data.tokenValue, res.data.tokenName);
+        setToken(res.data.tokenInfo.tokenValue, res.data.tokenInfo.tokenName);
+
+        const result = await api.get<MyProject>('/wechat/common/getMyProject');
+        setMyProject(result.data);
+        console.log(
+          '_________________________ ~ getMyProject ~ result:',
+          result,
+        );
+
         // }, 2000);
       } catch (error) {
         console.error('_________________________ ~ login ~ error:', error);
@@ -89,7 +99,7 @@ export default function Example() {
           <CustomIcon
             width={80}
             height={80}
-            style={{marginBottom: 36, marginTop: 36, alignSelf: 'center'}}
+            style={{marginBottom: 15, marginTop: 15, alignSelf: 'center'}}
           />
 
           <Text style={styles.title}>
@@ -105,17 +115,17 @@ export default function Example() {
               autoCorrect={false}
               clearButtonMode="while-editing"
               keyboardType="name-phone-pad"
-              onChangeText={phoneNumber => setForm({...form, phoneNumber})}
+              onChangeText={tel => setForm({...form, tel})}
               placeholder="请输入手机号"
               placeholderTextColor="#6b7280"
-              value={form.phoneNumber}
+              value={form.tel}
               style={[
                 styles.inputControl,
-                errors.phoneNumber ? {borderColor: 'red'} : null,
+                errors.tel ? {borderColor: 'red'} : null,
               ]}
             />
-            {errors.phoneNumber ? (
-              <Text style={styles.errorText}>{errors.phoneNumber}</Text>
+            {errors.tel ? (
+              <Text style={styles.errorText}>{errors.tel}</Text>
             ) : null}
           </View>
 
@@ -132,7 +142,7 @@ export default function Example() {
               value={form.password}
               style={[
                 styles.inputControl,
-                errors.phoneNumber ? {borderColor: 'red'} : null,
+                errors.tel ? {borderColor: 'red'} : null,
               ]}
             />
             {errors.password ? (
@@ -152,20 +162,8 @@ export default function Example() {
               </View>
             </TouchableOpacity>
           </View>
-
-          {/* <TouchableOpacity onPress={() => {}}>
-            <Text style={styles.formLink}>忘记密码</Text>
-          </TouchableOpacity> */}
         </View>
       </View>
-
-      <TouchableOpacity onPress={() => {}}>
-        <Text style={styles.formFooter}>
-          <Text style={{textDecorationLine: 'underline'}}>
-            湖南长沪信息科技有限公司
-          </Text>
-        </Text>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -175,13 +173,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: 0,
-    padding: 24,
+    paddingLeft: 24,
+    paddingRight: 24,
   },
   title: {
     fontSize: 31,
     fontWeight: '700',
     color: '#1D2A32',
-    marginBottom: 6,
+    // marginBottom: 6,
   },
   subtitle: {
     fontSize: 15,
@@ -192,13 +191,13 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 36,
+    // marginVertical: 36,
   },
   headerImg: {
     width: 80,
     height: 80,
     alignSelf: 'center',
-    marginBottom: 36,
+    // marginBottom: 36,
   },
   /** Form */
   form: {
@@ -270,56 +269,3 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
-
-// // src/screens/Login.tsx
-// import React, { useState } from 'react';
-// import { View, TextInput } from 'react-native';
-// import { Input, Button } from '@rneui/themed';
-// import { useAuthStore } from '@/stores/auth';
-// import axios from '@/api/request';
-// import { encryptStr } from '@/utils';
-
-// export default function LoginScreen() {
-//   const [phoneNumber, setPhoneNumber] = useState('18570083528');
-//   const [password, setPassword] = useState('123456');
-//   const setToken = useAuthStore(state => state.setToken);
-//   const [loading, setLoading] = useState(false);
-
-//   const login = async () => {
-//     setLoading(true);
-
-//     const encryptedText = encryptStr(password);
-
-//     try {
-//       const res = await axios.post<TokenInfo>('/login/management', {
-//         phoneNumber: phoneNumber,
-//         password: encryptedText,
-//       });
-//       console.log('_________________________ ~ login ~ res:', res);
-
-//       setToken(res.data.tokenValue, res.data.tokenName);
-//     } catch (error) {
-//       console.error('_________________________ ~ login ~ error:', error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-//       <Input
-//         onChangeText={setPhoneNumber}
-//         value={phoneNumber}
-//         placeholder="请输入账户"
-//       />
-//       <Input
-//         onChangeText={setPassword}
-//         value={password}
-//         placeholder="请输入密码"
-//         secureTextEntry={true}
-//       />
-
-//       <Button loading={loading} title="登录" onPress={login} />
-//     </View>
-//   );
-// }
