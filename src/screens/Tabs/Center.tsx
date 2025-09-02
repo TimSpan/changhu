@@ -1,8 +1,8 @@
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {AntDesign} from '@react-native-vector-icons/ant-design';
 import {Divider} from 'react-native-paper';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '@/navigation/types';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   'Home'
@@ -63,17 +63,24 @@ export const Center = ({navigation}: Props) => {
             <AntDesign name={'ordered-list'} size={26} color={'#2080F0'} />
             <Text style={{fontSize: 16}}>排班</Text>
           </View> */}
-          <View style={{alignItems: 'center', flex: 1}}>
+
+          <TouchableOpacity
+            style={{alignItems: 'center', flex: 1}}
+            activeOpacity={0.7}
+            onPress={() => {
+              navigation.navigate('BloodPressure');
+            }}>
             <AntDesign name={'thunderbolt'} size={26} color={'#2080F0'} />
             <Text style={{fontSize: 16}}>采集血压</Text>
+          </TouchableOpacity>
+
+          <View style={{alignItems: 'center', flex: 1}}>
+            {/* <AntDesign name={'user-switch'} size={26} color={'#2080F0'} />
+            <Text style={{fontSize: 16}}>员工信息</Text> */}
           </View>
           <View style={{alignItems: 'center', flex: 1}}>
-            <AntDesign name={'user-switch'} size={26} color={'#2080F0'} />
-            <Text style={{fontSize: 16}}>员工信息</Text>
-          </View>
-          <View style={{alignItems: 'center', flex: 1}}>
-            <AntDesign name={'solution'} size={26} color={'#2080F0'} />
-            <Text style={{fontSize: 16}}>岗位管理</Text>
+            {/* <AntDesign name={'solution'} size={26} color={'#2080F0'} />
+            <Text style={{fontSize: 16}}>岗位管理</Text> */}
           </View>
         </View>
 
@@ -84,8 +91,8 @@ export const Center = ({navigation}: Props) => {
           </View> */}
 
           <View style={{alignItems: 'center', flex: 1}}>
-            <AntDesign name={'video-camera'} size={26} color={'#2080F0'} />
-            <Text style={{fontSize: 16}}>巡逻管理</Text>
+            {/* <AntDesign name={'video-camera'} size={26} color={'#2080F0'} />
+            <Text style={{fontSize: 16}}>巡逻管理</Text> */}
           </View>
 
           <View style={{alignItems: 'center', flex: 1}}></View>

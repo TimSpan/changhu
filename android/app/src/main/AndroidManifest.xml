@@ -31,6 +31,11 @@
   <!-- 如果 targetSdkVersion >= 30，还要在 <application> 里加： -->
   <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
+  <!-- 相机权限 -->
+  <uses-permission android:name="android.permission.CAMERA" />
+
+  <!-- optionally, if you want to record audio: -->
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
   <!-- networkSecurityConfig 允许 release 访问局域网 HTTP -->
   <application

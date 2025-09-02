@@ -1,3 +1,14 @@
+// 在 React Native 里：
+
+// Modal 会独立于 React 的视图层级渲染（相当于一个单独的原生视图层），理论上它应该盖住所有内容。
+
+// 但是如果你把 Modal 放在某些容器里（比如 SafeAreaView 或有 overflow: hidden 的父容器），可能会导致它看不到。
+
+// Modal 在原生层面是一个“新的窗口”
+
+// RN 的 Modal 并不是普通的 View，它会直接挂载到最顶层（原生的 window / rootView）。
+
+// 理论上不管放在哪个位置，都会显示在最上面。
 import React from 'react';
 import {View, ActivityIndicator, StyleSheet, Modal, Text} from 'react-native';
 
@@ -21,7 +32,9 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       visible={visible}
       transparent
       animationType="fade"
-      statusBarTranslucent>
+      statusBarTranslucent
+      presentationStyle="overFullScreen" // 🔑 保证全屏覆盖，避免被原生 view 压住
+    >
       <View style={styles.container}>
         <View
           style={[styles.box, transparent && {backgroundColor: 'transparent'}]}>

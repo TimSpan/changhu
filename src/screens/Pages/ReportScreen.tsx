@@ -53,6 +53,7 @@ export const ReportScreen = () => {
 
   const takePhoto = async () => {
     launchCamera({mediaType: 'photo', saveToPhotos: true}, async response => {
+      console.log('🍎 ~ takePhoto ~ response:', response);
       if (!response.assets?.[0]) return;
       const asset = response.assets[0];
       const {uri, fileName, type} = asset;
