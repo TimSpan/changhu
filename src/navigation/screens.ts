@@ -3,6 +3,7 @@ import {ReportScreen} from '@/screens/Pages/ReportScreen';
 import {RootStackParamList} from './types';
 import {BloodPressure} from '@/screens/Pages/BloodPressure';
 import {FaceRecognitionPunch} from '@/components/FaceRecognitionPunch';
+import {BloodFormScreen} from '@/screens/Pages/BloodFormScreen';
 type ScreenConfig = {
   name: keyof RootStackParamList; // 强制 name 属于 RootStackParamList
   component: React.ComponentType<any>;
@@ -45,6 +46,16 @@ export const screens: ScreenConfig[] = [
       headerStyle: {backgroundColor: '#007bff'},
       headerTintColor: '#fff',
       headerShown: false,
+    },
+  },
+
+  {
+    name: 'BloodForm',
+    component: BloodFormScreen,
+    options: {
+      title: '采集上传',
+      headerStyle: {backgroundColor: '#007bff'},
+      headerTintColor: '#fff',
     },
   },
 ];

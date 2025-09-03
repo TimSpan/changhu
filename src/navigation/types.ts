@@ -13,4 +13,5 @@ export type RootStackParamList = {
   Patrol: undefined;
   BloodPressure: undefined;
   FaceRecognitionPunch: undefined;
+  BloodForm: undefined;
 };

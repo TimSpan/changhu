@@ -1,20 +1,21 @@
 import React, {JSX, useEffect, useMemo, useRef, useState} from 'react';
 import {StyleSheet, Text, Button, View, useWindowDimensions, Platform, Alert, TouchableOpacity} from 'react-native';
 import {CameraPosition, DrawableFrame, Frame, PhotoFile, Camera as VisionCamera, useCameraDevice, useCameraPermission} from 'react-native-vision-camera';
-import {useIsFocused} from '@react-navigation/core';
+import {useFocusEffect, useIsFocused} from '@react-navigation/core';
 import {useAppState} from '@react-native-community/hooks';
 import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
-import {NavigationContainer} from '@react-navigation/native';
 import {Camera, Face, FaceDetectionOptions, Contours, Landmarks, useFaceDetector} from 'react-native-vision-camera-face-detector';
 import {ClipOp, Skia, TileMode} from '@shopify/react-native-skia';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {api} from '@/api/request';
 import {useProject} from '@/stores/userProject';
 import LoadingOverlay from '../LoadingOverlay';
+import {DialogWithCustom} from '../DialogWithCustom';
+import {User} from './type';
 // 屏幕中间虚线框的尺寸
 const BOX_WIDTH = 250;
 const BOX_HEIGHT = 350;
-export function FaceRecognitionPunch(): JSX.Element {
+export function FaceRecognitionPunch({navigation}: any): JSX.Element {
   const processingRef = useRef(true);
   const stopFrameProcessing = () => {
     processingRef.current = false;
@@ -22,6 +23,25 @@ export function FaceRecognitionPunch(): JSX.Element {
   const startFrameProcessing = () => {
     processingRef.current = true;
   };
+
+  /**
+   * @useFocusEffect 当返回这个页面时、可以这样做
+   */
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     // Do something when the screen is focused \ 在屏幕聚焦的时候做点什么
+  //     console.log('进入页面、可以开始检测');
+  //     photoRef.current = null;
+  //     startFrameProcessing();
+  //     return () => {
+  //       // Do something when the screen is unfocused \ 在屏幕没有聚焦的时候做点什么
+  //       // Useful for cleanup  \ 用于清理函数
+  //     };
+  //   }, []),
+  // );
+
+  const [user, setUser] = useState<User>();
+  const [visible, setVisible] = useState<boolean>(false);
   const [title, setTitle] = useState<string>('查找中...');
   const [activityLoading, setActivityLoading] = useState<boolean>(false);
   const {myProject} = useProject();
@@ -123,9 +143,7 @@ export function FaceRecognitionPunch(): JSX.Element {
   }
 
   function handleFacesDetected(faces: Face[], frame: Frame): void {
-    //
     if (!processingRef.current) return; // 停止处理
-    console.log(faces);
     if (faces.length <= 0) {
       aFaceW.value = 0;
       aFaceH.value = 0;
@@ -150,8 +168,6 @@ export function FaceRecognitionPunch(): JSX.Element {
 
     if (aFaceX.value >= boxLeft && aFaceX.value + aFaceW.value <= boxRight && aFaceY.value >= boxTop && aFaceY.value + aFaceH.value <= boxBottom) {
       if (cameraDevice?.position === 'front') {
-        console.log('前置检测');
-
         // 👁️ 眼睛闭合检测
         if (face.leftEyeOpenProbability < 0.8 && face.rightEyeOpenProbability < 0.8) {
           setShowText('请睁眼');
@@ -178,16 +194,13 @@ export function FaceRecognitionPunch(): JSX.Element {
     }
   }
 
-  const [photo, setPhoto] = useState<PhotoFile | null>(null);
   const photoRef = useRef<PhotoFile | null>(null);
   const takePicture = async () => {
-    console.log(222);
     if (photoRef.current) return;
     if (camera.current) {
       try {
         setActivityLoading(true);
         const p = await camera.current.takePhoto();
-        console.log('🍎 ~ 照片 ~ photo:', p);
         photoRef.current = p;
         const formData = new FormData();
         formData.append('projectId', myProject?.snowFlakeId || '');
@@ -198,22 +211,15 @@ export function FaceRecognitionPunch(): JSX.Element {
         } as any);
 
         try {
-          const response = await api.post('/wechat/common/getUserByFace', formData, {
+          const response = await api.post<User>('/wechat/common/getUserByFace', formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },
           });
 
           console.log('✅ ~ takePicture ~ response:', response);
-          Alert.alert('提示', '可以跳转新页面', [
-            {
-              text: '确定',
-              onPress: () => {
-                photoRef.current = null; // 清空，允许再次拍照
-                startFrameProcessing();
-              },
-            },
-          ]);
+          setUser(response.data);
+          setVisible(true);
         } catch (error) {
           console.log('❌ ~ takePicture ~ error:', error);
           // @ts-ignore
@@ -221,7 +227,6 @@ export function FaceRecognitionPunch(): JSX.Element {
             {
               text: '确定',
               onPress: () => {
-                console.log(333);
                 photoRef.current = null; // 清空，允许再次拍照
                 startFrameProcessing();
               },
@@ -247,7 +252,6 @@ export function FaceRecognitionPunch(): JSX.Element {
     blurPaint.setImageFilter(blurFilter);
     const contourPath = Skia.Path.Make();
     const necessaryContours: (keyof Contours)[] = ['FACE', 'LEFT_CHEEK', 'RIGHT_CHEEK'];
-
     necessaryContours.map(key => {
       contours?.[key]?.map((point, index) => {
         if (index === 0) {
@@ -379,6 +383,22 @@ export function FaceRecognitionPunch(): JSX.Element {
           {showText}
         </Text>
         <LoadingOverlay visible={activityLoading} title={title} />
+
+        <DialogWithCustom
+          visible={visible}
+          close={() => {
+            startFrameProcessing();
+            setVisible(false);
+          }}
+          confirm={() => {
+            setVisible(false);
+            // 跳转页面
+            navigation.navigate('BloodForm');
+          }}
+        >
+          <Text style={{fontSize: 20}}>姓名：{user?.name}</Text>
+          <Text style={{fontSize: 20}}>性别：{user?.sex.label}</Text>
+        </DialogWithCustom>
       </View>
     </SafeAreaView>
   );
