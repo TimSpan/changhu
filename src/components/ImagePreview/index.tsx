@@ -27,12 +27,8 @@
 //   );
 // };
 
-import React, { useCallback, useRef } from 'react';
-import {
-  stackTransition,
-  Gallery,
-  type GalleryRefType,
-} from 'react-native-zoom-toolkit';
+import React, {useCallback, useRef} from 'react';
+import {stackTransition, Gallery, type GalleryRefType} from 'react-native-zoom-toolkit';
 
 import GalleryImage from './GalleryImage';
 
@@ -61,14 +57,5 @@ export const ImagePreview = () => {
 
   const transition = useCallback(stackTransition, []);
 
-  return (
-    <Gallery
-      ref={ref}
-      data={images}
-      keyExtractor={keyExtractor}
-      renderItem={renderItem}
-      onTap={onTap}
-      customTransition={transition}
-    />
-  );
+  return <Gallery ref={ref} data={images} keyExtractor={keyExtractor} renderItem={renderItem} onTap={onTap} customTransition={transition} />;
 };

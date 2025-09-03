@@ -1,16 +1,6 @@
 import {useEffect, useRef, useState} from 'react';
 import Geolocation from '@react-native-community/geolocation';
-import {
-  Alert,
-  PermissionsAndroid,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {Alert, PermissionsAndroid, Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import dayjs from 'dayjs';
 import WebView from 'react-native-webview';
@@ -27,16 +17,9 @@ export const Home = () => {
   // Android 动态请求定位权限
   const requestLocationPermission = async () => {
     if (Platform.OS === 'android') {
-      const fine = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      );
-      const coarse = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-      );
-      return (
-        fine === PermissionsAndroid.RESULTS.GRANTED &&
-        coarse === PermissionsAndroid.RESULTS.GRANTED
-      );
+      const fine = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+      const coarse = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION);
+      return fine === PermissionsAndroid.RESULTS.GRANTED && coarse === PermissionsAndroid.RESULTS.GRANTED;
     }
     return true;
   };
@@ -90,7 +73,7 @@ export const Home = () => {
   const webRef = useRef<WebView>(null);
   return (
     <>
-      <StatusBar backgroundColor="#ccc" />
+      <StatusBar backgroundColor='#ccc' />
 
       <View style={styles.container}>
         <View style={styles.top}>
@@ -109,9 +92,7 @@ export const Home = () => {
                 webRef.current?.postMessage(JSON.stringify(center));
                 console.log('执行了发送消息  RN ➡ H5');
               } else {
-                webRef.current?.postMessage(
-                  JSON.stringify({latitude: 28.237204, longitude: 112.814658}),
-                );
+                webRef.current?.postMessage(JSON.stringify({latitude: 28.237204, longitude: 112.814658}));
                 console.log('执行了发送消息  RN ➡ H5');
               }
             }}
@@ -122,11 +103,7 @@ export const Home = () => {
         <View style={styles.bottom}>
           <View style={styles.clockButtonBox}>
             <TouchableOpacity activeOpacity={0.8}>
-              <LinearGradient
-                colors={['#f7853f', '#fba426', '#ffce11']}
-                start={{x: 0, y: 0}}
-                end={{x: 0, y: 1}}
-                style={styles.clockButtonBox}>
+              <LinearGradient colors={['#f7853f', '#fba426', '#ffce11']} start={{x: 0, y: 0}} end={{x: 0, y: 1}} style={styles.clockButtonBox}>
                 <Text style={styles.timeText}>{time}</Text>
                 <Text style={styles.buttonText}>打卡</Text>
               </LinearGradient>

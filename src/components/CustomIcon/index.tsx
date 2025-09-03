@@ -1,22 +1,12 @@
 import React from 'react';
-import Svg, { G, Path } from 'react-native-svg';
+import Svg, {G, Path} from 'react-native-svg';
 
 export function CustomIcon(props: any) {
   return (
-    <Svg
-      width={30}
-      height={30}
-      viewBox="0 0 640 640"
-      preserveAspectRatio="xMidYMid meet"
-      {...props}
-    >
-      <G
-        transform="translate(0,640) scale(0.1,-0.1)"
-        fill="#2080F0"
-        stroke="none"
-      >
+    <Svg width={30} height={30} viewBox='0 0 640 640' preserveAspectRatio='xMidYMid meet' {...props}>
+      <G transform='translate(0,640) scale(0.1,-0.1)' fill='#2080F0' stroke='none'>
         <Path
-          d="M3045 5731 c-138 -23 -319 -101 -427 -185 -75 -59 -157 -148 -198
+          d='M3045 5731 c-138 -23 -319 -101 -427 -185 -75 -59 -157 -148 -198
           -215 -14 -23 -56 -90 -94 -149 -38 -59 -79 -123 -91 -142 -59 -94 -128 -200
           -158 -242 -17 -25 -45 -70 -62 -98 -16 -28 -44 -70 -61 -93 -17 -23 -39 -58
           -49 -77 -9 -19 -24 -43 -33 -53 -8 -9 -40 -57 -71 -106 -87 -137 -159 -249
@@ -44,7 +34,7 @@ export function CustomIcon(props: any) {
           29 -38 55 -38 58 0 3 -43 71 -95 150 -52 79 -98 152 -102 162 -4 10 -15 27
           -26 38 -10 11 -25 33 -33 48 -8 15 -43 70 -77 122 -34 52 -83 127 -109 167
           -59 90 -138 180 -192 217 -23 15 -62 42 -87 59 -55 38 -166 85 -264 113 -78
-          23 -330 34 -420 20z"
+          23 -330 34 -420 20z'
         />
       </G>
     </Svg>

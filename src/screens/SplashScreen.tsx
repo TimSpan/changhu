@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import {View, ActivityIndicator, StyleSheet} from 'react-native';
 
 export default function SplashScreen() {
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#007bff" />
+      <ActivityIndicator size='large' color='#007bff' />
     </View>
   );
 }

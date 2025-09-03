@@ -4,24 +4,10 @@ import {launchCamera} from 'react-native-image-picker';
 import {Ionicons} from '@react-native-vector-icons/ionicons';
 import Video from 'react-native-video';
 import {useProject} from '@/stores/userProject';
-import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {TextInput} from 'react-native-paper';
 import EventTypeBottomSheet from '@/components/EventTypeBottomSheet';
-import {
-  generateFileName,
-  getPreSignedUrl,
-  getPreSignedUrlFromKey,
-} from '@/utils/upload';
+import {generateFileName, getPreSignedUrl, getPreSignedUrlFromKey} from '@/utils/upload';
 import LoadingOverlay from '@/components/LoadingOverlay';
 const {width} = Dimensions.get('window');
 export const ReportScreen = () => {
@@ -40,10 +26,7 @@ export const ReportScreen = () => {
   const [videoObjectKey, setVideoObjectKey] = useState<string | null>(null);
 
   const sysDictPager = async () => {
-    const resp = await api.get<Option[]>(
-      '/management/sys/dict/sysDictGroupCode',
-      {sysDictGroupCode: 'projectEvent'},
-    );
+    const resp = await api.get<Option[]>('/management/sys/dict/sysDictGroupCode', {sysDictGroupCode: 'projectEvent'});
     setEventTypeList(resp.data);
   };
 
@@ -62,10 +45,7 @@ export const ReportScreen = () => {
         setTitle('照片上传中...');
         setActivityLoading(true);
         const uploadName = fileName || generateFileName(uri);
-        const {objectKey, preSignedUrl} = await getPreSignedUrl(
-          uploadName,
-          'your-parent-dir',
-        );
+        const {objectKey, preSignedUrl} = await getPreSignedUrl(uploadName, 'your-parent-dir');
         const res = await fetch(uri);
         const blob = await res.blob();
         await fetch(preSignedUrl, {
@@ -96,10 +76,7 @@ export const ReportScreen = () => {
         setTitle('视频上传中...');
         setActivityLoading(true);
         const uploadName = fileName || generateFileName(uri);
-        const {objectKey, preSignedUrl} = await getPreSignedUrl(
-          uploadName,
-          'your-parent-dir',
-        );
+        const {objectKey, preSignedUrl} = await getPreSignedUrl(uploadName, 'your-parent-dir');
         const res = await fetch(uri);
         const blob = await res.blob();
         await fetch(preSignedUrl, {
@@ -188,16 +165,11 @@ export const ReportScreen = () => {
           onPress={() => {
             setVisible(true);
           }}
-          style={styles.top}>
+          style={styles.top}
+        >
           <View style={{flexDirection: 'row'}}>
-            <Text style={{color: '#FF0000', fontSize: 22, marginRight: 10}}>
-              *
-            </Text>
-            {selectedType ? (
-              <Text style={{fontSize: 22}}>已选择：{selectedType?.label}</Text>
-            ) : (
-              <Text style={{fontSize: 22}}>选择事件类型</Text>
-            )}
+            <Text style={{color: '#FF0000', fontSize: 22, marginRight: 10}}>*</Text>
+            {selectedType ? <Text style={{fontSize: 22}}>已选择：{selectedType?.label}</Text> : <Text style={{fontSize: 22}}>选择事件类型</Text>}
           </View>
 
           <Ionicons name={'arrow-forward'} size={50} color={'#aaa'} />
@@ -213,7 +185,8 @@ export const ReportScreen = () => {
               onPress={() => {
                 takePhoto();
               }}
-              style={styles.upLoadStyle}>
+              style={styles.upLoadStyle}
+            >
               <Ionicons name={'camera'} size={50} color={'#aaa'} />
             </TouchableOpacity>
           </View>
@@ -259,7 +232,8 @@ export const ReportScreen = () => {
               onPress={() => {
                 takeVideo();
               }}
-              style={styles.upLoadStyle}>
+              style={styles.upLoadStyle}
+            >
               <Ionicons name={'videocam-outline'} size={50} color={'#aaa'} />
             </TouchableOpacity>
           </View>
@@ -269,7 +243,7 @@ export const ReportScreen = () => {
                 source={{uri: videoUri}}
                 style={{width: 150, height: 100}}
                 controls={true} // 显示播放控制条
-                resizeMode="contain"
+                resizeMode='contain'
               />
             )}
           </View>
@@ -278,8 +252,8 @@ export const ReportScreen = () => {
           <TextInput
             value={remark} // ✅ 绑定值
             onChangeText={setRemark} // ✅ 更新值
-            mode="outlined"
-            label="备注："
+            mode='outlined'
+            label='备注：'
             multiline
             style={styles.fixedHeight}
           />
@@ -287,7 +261,7 @@ export const ReportScreen = () => {
 
         {eventTypeList && (
           <EventTypeBottomSheet
-            title="选择事件类型"
+            title='选择事件类型'
             visible={visible}
             onClose={() => setVisible(false)}
             eventTypeList={eventTypeList}
@@ -298,13 +272,7 @@ export const ReportScreen = () => {
       </ScrollView>
 
       <TouchableOpacity onPress={submit}>
-        <View style={styles.submitBtn}>
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.submitBtnText}>事件上报</Text>
-          )}
-        </View>
+        <View style={styles.submitBtn}>{loading ? <ActivityIndicator color='#fff' /> : <Text style={styles.submitBtnText}>事件上报</Text>}</View>
       </TouchableOpacity>
 
       <LoadingOverlay visible={activityLoading} title={title} />

@@ -2,14 +2,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import {useAuthStore} from '@/stores/auth';
 import {useState} from 'react';
 import {useProject} from '@/stores/userProject';
-import {
-  Image,
-  ImageBackground,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {Image, ImageBackground, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {Button as NButton, Divider} from 'react-native-paper';
 
 export const User = () => {
@@ -65,18 +58,19 @@ export const User = () => {
               marginBottom: 5,
               backgroundColor: '#2080F0',
             }}
-            mode="contained"
+            mode='contained'
             onPress={() => {
               setVisible(true);
-            }}>
+            }}
+          >
             退出登录
           </NButton>
         </View>
 
         <ConfirmDialog
           visible={visible}
-          title="提示"
-          text="确定要退出登录么？"
+          title='提示'
+          text='确定要退出登录么？'
           confirm={() => {
             setVisible(false);
             logOut();

@@ -3,10 +3,7 @@ import {AntDesign} from '@react-native-vector-icons/ant-design';
 import {Divider} from 'react-native-paper';
 import {RootStackParamList} from '@/navigation/types';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-type HomeScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  'Home'
->;
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 interface Props {
   navigation: HomeScreenNavigationProp;
@@ -21,17 +18,14 @@ export const Center = ({navigation}: Props) => {
             lineHeight: 30,
             fontSize: 20,
             color: '#2080F0',
-          }}>
+          }}
+        >
           快捷功能
         </Text>
         <Divider style={{marginTop: 10, marginBottom: 20}} />
         <View style={{flexDirection: 'row'}}>
           <View style={{alignItems: 'center', flex: 1}}>
-            <AntDesign
-              name={'safety-certificate'}
-              size={26}
-              color={'#2080F0'}
-            />
+            <AntDesign name={'safety-certificate'} size={26} color={'#2080F0'} />
             <Text style={{fontSize: 16}}>巡逻</Text>
           </View>
 
@@ -40,8 +34,9 @@ export const Center = ({navigation}: Props) => {
             activeOpacity={0.7} // 点击时的透明度反馈
             onPress={() => {
               navigation.navigate('Report');
-            }}>
-            <AntDesign name="alert" size={26} color="#2080F0" />
+            }}
+          >
+            <AntDesign name='alert' size={26} color='#2080F0' />
             <Text style={{fontSize: 16}}>事件上报</Text>
           </TouchableOpacity>
           <View style={{alignItems: 'center', flex: 1}}></View>
@@ -54,7 +49,8 @@ export const Center = ({navigation}: Props) => {
             lineHeight: 30,
             fontSize: 20,
             color: '#2080F0',
-          }}>
+          }}
+        >
           功能
         </Text>
         <Divider style={{marginTop: 10, marginBottom: 20}} />
@@ -69,7 +65,8 @@ export const Center = ({navigation}: Props) => {
             activeOpacity={0.7}
             onPress={() => {
               navigation.navigate('BloodPressure');
-            }}>
+            }}
+          >
             <AntDesign name={'thunderbolt'} size={26} color={'#2080F0'} />
             <Text style={{fontSize: 16}}>采集血压</Text>
           </TouchableOpacity>

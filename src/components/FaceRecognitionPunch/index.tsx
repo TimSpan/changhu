@@ -1,41 +1,13 @@
-import React, {JSX, useEffect, useRef, useState} from 'react';
-import {
-  StyleSheet,
-  Text,
-  Button,
-  View,
-  useWindowDimensions,
-  Platform,
-  Alert,
-  TouchableOpacity,
-} from 'react-native';
-import {
-  CameraPosition,
-  DrawableFrame,
-  Frame,
-  PhotoFile,
-  Camera as VisionCamera,
-  useCameraDevice,
-  useCameraPermission,
-} from 'react-native-vision-camera';
+import React, {JSX, useEffect, useMemo, useRef, useState} from 'react';
+import {StyleSheet, Text, Button, View, useWindowDimensions, Platform, Alert, TouchableOpacity} from 'react-native';
+import {CameraPosition, DrawableFrame, Frame, PhotoFile, Camera as VisionCamera, useCameraDevice, useCameraPermission} from 'react-native-vision-camera';
 import {useIsFocused} from '@react-navigation/core';
 import {useAppState} from '@react-native-community/hooks';
 import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 import {NavigationContainer} from '@react-navigation/native';
-import {
-  Camera,
-  Face,
-  FaceDetectionOptions,
-  Contours,
-  Landmarks,
-  useFaceDetector,
-} from 'react-native-vision-camera-face-detector';
+import {Camera, Face, FaceDetectionOptions, Contours, Landmarks, useFaceDetector} from 'react-native-vision-camera-face-detector';
 import {ClipOp, Skia, TileMode} from '@shopify/react-native-skia';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {api} from '@/api/request';
 import {useProject} from '@/stores/userProject';
 import LoadingOverlay from '../LoadingOverlay';
@@ -58,7 +30,7 @@ export function FaceRecognitionPunch(): JSX.Element {
   const [cameraMounted, setCameraMounted] = useState<boolean>(false);
   const [cameraPaused, setCameraPaused] = useState<boolean>(false);
   const [autoMode, setAutoMode] = useState<boolean>(true);
-  const [cameraFacing, setCameraFacing] = useState<CameraPosition>('back');
+  const [cameraFacing, setCameraFacing] = useState<CameraPosition>('front');
   const cameraDevice = useCameraDevice(cameraFacing);
   // const faceDetectionOptions = useRef<FaceDetectionOptions>({
   // performanceMode: 'fast',     // 性能模式：'fast'（快，牺牲精度） or 'accurate'（慢，但更准）
@@ -69,25 +41,27 @@ export function FaceRecognitionPunch(): JSX.Element {
   // windowHeight: height,        // 检测窗口高度
   // }).current;
   // 手持 测试 参数
-  let contourSupport: 'all' | 'none' = 'all';
-  useEffect(() => {
-    if (cameraDevice) {
-      console.log('当前相机设备信息:', cameraDevice);
-      if (cameraDevice.position === 'back') {
-        contourSupport = 'none';
-      } else {
-        contourSupport = 'all';
-      }
-    }
-  }, [cameraDevice]);
-  const faceDetectionOptions = useRef<FaceDetectionOptions>({
-    performanceMode: 'fast',
-    classificationMode: 'all',
-    landmarkMode: 'all',
-    contourMode: contourSupport, // 手持后置不支持
-    windowWidth: width,
-    windowHeight: height,
-  }).current;
+  const faceDetectionOptions = useMemo<FaceDetectionOptions>(() => {
+    if (!cameraDevice)
+      return {
+        performanceMode: 'accurate',
+        classificationMode: 'none',
+        contourMode: 'none', // 默认安全值
+        landmarkMode: 'all',
+        windowWidth: width,
+        windowHeight: height,
+      };
+
+    return {
+      performanceMode: 'accurate',
+      classificationMode: cameraDevice.position === 'back' ? 'none' : 'all',
+      contourMode: cameraDevice.position === 'back' ? 'none' : 'all',
+      landmarkMode: 'all',
+      windowWidth: width,
+      windowHeight: height,
+    };
+  }, [cameraDevice, width, height]);
+
   const {stopListeners} = useFaceDetector(faceDetectionOptions);
   const isFocused = useIsFocused();
   const appState = useAppState();
@@ -149,9 +123,9 @@ export function FaceRecognitionPunch(): JSX.Element {
   }
 
   function handleFacesDetected(faces: Face[], frame: Frame): void {
-    console.log(faces);
+    //
     if (!processingRef.current) return; // 停止处理
-
+    console.log(faces);
     if (faces.length <= 0) {
       aFaceW.value = 0;
       aFaceH.value = 0;
@@ -174,34 +148,24 @@ export function FaceRecognitionPunch(): JSX.Element {
     aFaceX.value = x;
     aFaceY.value = y;
 
-    if (
-      aFaceX.value >= boxLeft &&
-      aFaceX.value + aFaceW.value <= boxRight &&
-      aFaceY.value >= boxTop &&
-      aFaceY.value + aFaceH.value <= boxBottom
-    ) {
-      // 👁️ 眼睛闭合检测
-      if (
-        face.leftEyeOpenProbability < 0.8 &&
-        face.rightEyeOpenProbability < 0.8
-      ) {
-        setShowText('请睁眼');
-        return;
-      }
+    if (aFaceX.value >= boxLeft && aFaceX.value + aFaceW.value <= boxRight && aFaceY.value >= boxTop && aFaceY.value + aFaceH.value <= boxBottom) {
+      if (cameraDevice?.position === 'front') {
+        console.log('前置检测');
 
-      // 🎯 正面朝向检测
-      // pitchAngle = 点头上下角度
-      // rollAngle = 头部倾斜角度（歪头）
-      // yawAngle = 左右转头角度
-      if (
-        !(
-          Math.abs(face.pitchAngle) < 6 &&
-          Math.abs(face.rollAngle) < 6 &&
-          Math.abs(face.yawAngle) < 6
-        )
-      ) {
-        setShowText('请正面朝向屏幕');
-        return;
+        // 👁️ 眼睛闭合检测
+        if (face.leftEyeOpenProbability < 0.8 && face.rightEyeOpenProbability < 0.8) {
+          setShowText('请睁眼');
+          return;
+        }
+
+        // 🎯 正面朝向检测
+        // pitchAngle = 点头上下角度
+        // rollAngle = 头部倾斜角度（歪头）
+        // yawAngle = 左右转头角度
+        if (!(Math.abs(face.pitchAngle) < 10 && Math.abs(face.rollAngle) < 6 && Math.abs(face.yawAngle) < 6)) {
+          setShowText('请正面朝向屏幕');
+          return;
+        }
       }
 
       // ✅ 所有检测通过 -> 拍照
@@ -234,15 +198,11 @@ export function FaceRecognitionPunch(): JSX.Element {
         } as any);
 
         try {
-          const response = await api.post(
-            '/wechat/common/getUserByFace',
-            formData,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
+          const response = await api.post('/wechat/common/getUserByFace', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
             },
-          );
+          });
 
           console.log('✅ ~ takePicture ~ response:', response);
           Alert.alert('提示', '可以跳转新页面', [
@@ -278,33 +238,15 @@ export function FaceRecognitionPunch(): JSX.Element {
 
   function handleSkiaActions(faces: Face[], frame: DrawableFrame): void {
     'worklet';
-    // if no faces are detected we do nothing
-    // console.log('handleSkiaActions', 444);
-    // if (!processingRef.current) return; // 停止处理
-    // console.log('handleSkiaActions', 555);
-
     if (faces.length <= 0) return;
-
-    // console.log('SKIA - faces', faces.length, 'frame', frame.toString());
-
     const {bounds, contours, landmarks} = faces[0];
-
     // draw a blur shape around the face points
     const blurRadius = 25;
-    const blurFilter = Skia.ImageFilter.MakeBlur(
-      blurRadius,
-      blurRadius,
-      TileMode.Repeat,
-      null,
-    );
+    const blurFilter = Skia.ImageFilter.MakeBlur(blurRadius, blurRadius, TileMode.Repeat, null);
     const blurPaint = Skia.Paint();
     blurPaint.setImageFilter(blurFilter);
     const contourPath = Skia.Path.Make();
-    const necessaryContours: (keyof Contours)[] = [
-      'FACE',
-      'LEFT_CHEEK',
-      'RIGHT_CHEEK',
-    ];
+    const necessaryContours: (keyof Contours)[] = ['FACE', 'LEFT_CHEEK', 'RIGHT_CHEEK'];
 
     necessaryContours.map(key => {
       contours?.[key]?.map((point, index) => {
@@ -328,11 +270,7 @@ export function FaceRecognitionPunch(): JSX.Element {
     const mouthPath = Skia.Path.Make();
     const mouthPaint = Skia.Paint();
     mouthPaint.setColor(Skia.Color('red'));
-    const necessaryLandmarks: (keyof Landmarks)[] = [
-      'MOUTH_BOTTOM',
-      'MOUTH_LEFT',
-      'MOUTH_RIGHT',
-    ];
+    const necessaryLandmarks: (keyof Landmarks)[] = ['MOUTH_BOTTOM', 'MOUTH_LEFT', 'MOUTH_RIGHT'];
 
     necessaryLandmarks.map((key, index) => {
       const point = landmarks?.[key];
@@ -371,7 +309,8 @@ export function FaceRecognitionPunch(): JSX.Element {
             alignItems: 'center',
             justifyContent: 'center',
           },
-        ]}>
+        ]}
+      >
         <>
           <Camera
             photo={true}
@@ -409,10 +348,9 @@ export function FaceRecognitionPunch(): JSX.Element {
           <TouchableOpacity
             style={styles.fab}
             onPress={async () => {
-              setCameraFacing(current =>
-                current === 'front' ? 'back' : 'front',
-              );
-            }}>
+              setCameraFacing(current => (current === 'front' ? 'back' : 'front'));
+            }}
+          >
             <Text style={styles.fabText}>切换镜头</Text>
           </TouchableOpacity>
 
@@ -428,14 +366,16 @@ export function FaceRecognitionPunch(): JSX.Element {
           right: 0,
           display: 'flex',
           flexDirection: 'column',
-        }}>
+        }}
+      >
         <Text
           style={{
             fontSize: 22,
             width: '100%',
             textAlign: 'center',
             color: 'white',
-          }}>
+          }}
+        >
           {showText}
         </Text>
         <LoadingOverlay visible={activityLoading} title={title} />

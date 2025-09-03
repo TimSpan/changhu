@@ -20,24 +20,17 @@ interface LoadingOverlayProps {
   transparent?: boolean;
 }
 
-const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
-  title = '上传中...',
-  visible,
-  color = '#fff',
-  size = 'large',
-  transparent = false,
-}) => {
+const LoadingOverlay: React.FC<LoadingOverlayProps> = ({title = '上传中...', visible, color = '#fff', size = 'large', transparent = false}) => {
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType='fade'
       statusBarTranslucent
-      presentationStyle="overFullScreen" // 🔑 保证全屏覆盖，避免被原生 view 压住
+      presentationStyle='overFullScreen' // 🔑 保证全屏覆盖，避免被原生 view 压住
     >
       <View style={styles.container}>
-        <View
-          style={[styles.box, transparent && {backgroundColor: 'transparent'}]}>
+        <View style={[styles.box, transparent && {backgroundColor: 'transparent'}]}>
           <Text style={{color: '#fff'}}>{title}</Text>
           <ActivityIndicator size={size} color={color} />
         </View>

@@ -1,13 +1,5 @@
 import React, {useState, useCallback} from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  RefreshControl,
-  TouchableOpacity,
-} from 'react-native';
+import {SafeAreaView, StyleSheet, Text, View, FlatList, RefreshControl, TouchableOpacity} from 'react-native';
 import {Camera} from 'react-native-vision-camera';
 
 interface Item {
@@ -89,20 +81,14 @@ export const BloodPressure = ({navigation}: any) => {
             refreshing={refreshing}
             onRefresh={onRefresh}
             colors={['#2080F0']} // 安卓: 转圈圈颜色数组
-            tintColor="#2080F0" // iOS: 转圈圈颜色
+            tintColor='#2080F0' // iOS: 转圈圈颜色
             // size={RefreshControl.SIZE.LARGE}
           />
         }
         onEndReached={loadMore}
         onEndReachedThreshold={0.2}
         ListFooterComponent={
-          loadingMore ? (
-            <Text style={{textAlign: 'center', padding: 16}}>加载中...</Text>
-          ) : data.length >= 50 ? (
-            <Text style={{textAlign: 'center', padding: 16}}>
-              没有更多数据了
-            </Text>
-          ) : null
+          loadingMore ? <Text style={{textAlign: 'center', padding: 16}}>加载中...</Text> : data.length >= 50 ? <Text style={{textAlign: 'center', padding: 16}}>没有更多数据了</Text> : null
         }
       />
 
@@ -113,7 +99,8 @@ export const BloodPressure = ({navigation}: any) => {
           const permission = await Camera.requestCameraPermission();
 
           navigation.navigate('FaceRecognitionPunch');
-        }}>
+        }}
+      >
         <Text style={styles.fabText}>血压检测</Text>
       </TouchableOpacity>
     </SafeAreaView>

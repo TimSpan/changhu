@@ -3,9 +3,9 @@
 // onClose 👉 Toast 消失时要做的事（比如通知父组件隐藏）。
 // opacity 👉 用来控制透明度的动画值（useRef 保证在整个组件生命周期内只有一个数值对象）。
 
-import React, { useEffect, useRef } from 'react';
-import { Animated, Text, StyleSheet } from 'react-native';
-export const Toast = ({ message, duration = 2000, onClose }: any) => {
+import React, {useEffect, useRef} from 'react';
+import {Animated, Text, StyleSheet} from 'react-native';
+export const Toast = ({message, duration = 2000, onClose}: any) => {
   const opacity = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     // 进入时动画：从 0 透明 -> 1 不透明
@@ -27,7 +27,7 @@ export const Toast = ({ message, duration = 2000, onClose }: any) => {
 
   return (
     // Animated.View 👉 和 View 类似，但支持动画属性（这里是透明度）。
-    <Animated.View style={[styles.toast, { opacity }]}>
+    <Animated.View style={[styles.toast, {opacity}]}>
       <Text style={styles.text}>{message}</Text>
     </Animated.View>
   );
@@ -38,12 +38,12 @@ const styles = StyleSheet.create({
     position: 'absolute', // 固定在屏幕上，不会随布局变化
     bottom: 100, // 距离底部 100 像素
     left: '50%', // 居中
-    transform: [{ translateX: -75 }], // 向左平移一半宽度（150/2）
+    transform: [{translateX: -75}], // 向左平移一半宽度（150/2）
     width: 150,
     padding: 10,
     backgroundColor: 'rgba(0,0,0,0.7)', // 半透明黑色背景
     borderRadius: 8,
     alignItems: 'center',
   },
-  text: { color: '#fff' }, // 白色文字
+  text: {color: '#fff'}, // 白色文字
 });

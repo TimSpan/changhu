@@ -23,11 +23,7 @@ function HomeStackScreen() {
         headerTintColor: '#fff',
         headerTitleAlign: 'center',
       }}>
-      <RootStack.Screen
-        name="Home"
-        component={Home}
-        options={{title: '打卡'}}
-      />
+      <RootStack.Screen name="Home" component={Home} options={{title: '打卡'}} />
     </RootStack.Navigator>
   );
 }
@@ -41,11 +37,7 @@ function CenterStackScreen() {
         headerTitleAlign: 'center',
         headerShown: false,
       }}>
-      <RootStack.Screen
-        name="Center"
-        component={Center}
-        options={{title: '功能中心'}}
-      />
+      <RootStack.Screen name="Center" component={Center} options={{title: '功能中心'}} />
     </RootStack.Navigator>
   );
 }
@@ -58,11 +50,7 @@ function UserStackScreen() {
         headerTintColor: '#fff',
         headerTitleAlign: 'center',
       }}>
-      <RootStack.Screen
-        name="User"
-        component={User}
-        options={{title: '我的'}}
-      />
+      <RootStack.Screen name="User" component={User} options={{title: '我的'}} />
     </RootStack.Navigator>
   );
 }
@@ -90,16 +78,8 @@ function MainTabs() {
         options={{title: '打卡'}}
       /> */}
 
-      <Tab.Screen
-        name="center"
-        component={CenterStackScreen}
-        options={{title: '功能中心'}}
-      />
-      <Tab.Screen
-        name="user"
-        component={UserStackScreen}
-        options={{title: '我的'}}
-      />
+      <Tab.Screen name="center" component={CenterStackScreen} options={{title: '功能中心'}} />
+      <Tab.Screen name="user" component={UserStackScreen} options={{title: '我的'}} />
     </Tab.Navigator>
   );
 }
@@ -125,27 +105,14 @@ export function AppNavigation() {
     <RootStack.Navigator>
       {token && myProject ? (
         <>
-          <RootStack.Screen
-            name="MainTabs"
-            component={MainTabs}
-            options={{headerShown: false}}
-          />
+          <RootStack.Screen name="MainTabs" component={MainTabs} options={{headerShown: false}} />
 
           {screens.map(screen => (
-            <RootStack.Screen
-              key={screen.name}
-              name={screen.name}
-              component={screen.component}
-              options={screen.options}
-            />
+            <RootStack.Screen key={screen.name} name={screen.name} component={screen.component} options={screen.options} />
           ))}
         </>
       ) : (
-        <RootStack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{headerShown: false}}
-        />
+        <RootStack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
       )}
     </RootStack.Navigator>
   );

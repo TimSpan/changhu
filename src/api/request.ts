@@ -1,9 +1,4 @@
-import axios, {
-  AxiosError,
-  type AxiosInstance,
-  type AxiosRequestConfig,
-  type AxiosResponse,
-} from 'axios';
+import axios, {AxiosError, type AxiosInstance, type AxiosRequestConfig, type AxiosResponse} from 'axios';
 import {URL} from '@/common';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Alert} from 'react-native';
@@ -37,10 +32,7 @@ class RequestHttp {
       async (response: AxiosResponse): Promise<any> => {
         const jsonResult: JsonResult<unknown> = response.data;
         if (jsonResult && jsonResult.code !== 200) {
-          if (
-            [-1].includes(jsonResult.code) ||
-            [402].includes(jsonResult.code)
-          ) {
+          if ([-1].includes(jsonResult.code) || [402].includes(jsonResult.code)) {
             //清除登录信息
             //跳转登录页
             Alert.alert(jsonResult.message);
@@ -62,10 +54,7 @@ class RequestHttp {
         } else if (error.response) {
           console.log(error.response);
 
-          Alert.alert(
-            '网络错误类型：',
-            `服务器返回错误：${error.response.status}`,
-          );
+          Alert.alert('网络错误类型：', `服务器返回错误：${error.response.status}`);
         } else {
           Alert.alert('网络错误类型：', '未知错误，请稍后再试');
         }
@@ -77,43 +66,23 @@ class RequestHttp {
   /**
    *  常用请求方法封装
    */
-  get<T>(
-    url: string,
-    params?: object,
-    _object: AxiosRequestConfig = {},
-  ): Promise<JsonResult<T>> {
+  get<T>(url: string, params?: object, _object: AxiosRequestConfig = {}): Promise<JsonResult<T>> {
     return this.service.get(url, {params, ..._object});
   }
 
-  post<T>(
-    url: string,
-    params?: object | object[],
-    _object: AxiosRequestConfig = {},
-  ): Promise<JsonResult<T>> {
+  post<T>(url: string, params?: object | object[], _object: AxiosRequestConfig = {}): Promise<JsonResult<T>> {
     return this.service.post(url, params, _object);
   }
 
-  put<T>(
-    url: string,
-    params?: object | object[],
-    _object: AxiosRequestConfig = {},
-  ): Promise<JsonResult<T>> {
+  put<T>(url: string, params?: object | object[], _object: AxiosRequestConfig = {}): Promise<JsonResult<T>> {
     return this.service.put(url, params, _object);
   }
 
-  delete<T>(
-    url: string,
-    params?: object,
-    _object: AxiosRequestConfig = {},
-  ): Promise<JsonResult<T>> {
+  delete<T>(url: string, params?: object, _object: AxiosRequestConfig = {}): Promise<JsonResult<T>> {
     return this.service.delete(url, {params, ..._object});
   }
 
-  download(
-    url: string,
-    params?: object,
-    _object: AxiosRequestConfig = {},
-  ): Promise<BlobPart> {
+  download(url: string, params?: object, _object: AxiosRequestConfig = {}): Promise<BlobPart> {
     return this.service.post(url, params, {..._object, responseType: 'blob'});
   }
 }

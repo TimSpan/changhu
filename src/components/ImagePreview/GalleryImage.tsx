@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { Image, useWindowDimensions } from 'react-native';
-import { fitContainer } from 'react-native-zoom-toolkit';
+import React, {useState} from 'react';
+import {Image, useWindowDimensions} from 'react-native';
+import {fitContainer} from 'react-native-zoom-toolkit';
 
 type GalleryImageProps = {
   uri: string;
   index: number;
 };
 
-const GalleryImage: React.FC<GalleryImageProps> = ({ uri, index }) => {
-  const { width, height } = useWindowDimensions();
+const GalleryImage: React.FC<GalleryImageProps> = ({uri, index}) => {
+  const {width, height} = useWindowDimensions();
   const [resolution, setResolution] = useState<{
     width: number;
     height: number;
@@ -24,7 +24,7 @@ const GalleryImage: React.FC<GalleryImageProps> = ({ uri, index }) => {
 
   return (
     <Image
-      source={{ uri }}
+      source={{uri}}
       style={size}
       resizeMethod={'scale'}
       resizeMode={'cover'}

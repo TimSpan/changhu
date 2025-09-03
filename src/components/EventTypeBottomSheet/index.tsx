@@ -1,12 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import {View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions} from 'react-native';
 import {Checkbox} from 'react-native-paper';
 import Modal from 'react-native-modal';
 const {height} = Dimensions.get('window');
@@ -35,13 +28,7 @@ const EventTypeBottomSheet = ({
     onChange(val); // 把值传回父组件
   };
   return (
-    <Modal
-      isVisible={visible}
-      onBackdropPress={onClose}
-      onBackButtonPress={onClose}
-      style={styles.modal}
-      swipeDirection="down"
-      onSwipeComplete={onClose}>
+    <Modal isVisible={visible} onBackdropPress={onClose} onBackButtonPress={onClose} style={styles.modal} swipeDirection='down' onSwipeComplete={onClose}>
       <View style={styles.sheet}>
         <View style={styles.header}>
           <Text style={styles.headerText}>{title} </Text>
@@ -49,18 +36,12 @@ const EventTypeBottomSheet = ({
         <ScrollView style={styles.scroll}>
           {eventTypeList &&
             eventTypeList.map(option => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.option}
-                activeOpacity={0.7}
-                onPress={() => handleSelect(option)}>
+              <TouchableOpacity key={option.value} style={styles.option} activeOpacity={0.7} onPress={() => handleSelect(option)}>
                 <Checkbox
-                  status={
-                    selected?.value === option.value ? 'checked' : 'unchecked'
-                  }
+                  status={selected?.value === option.value ? 'checked' : 'unchecked'}
                   onPress={() => handleSelect(option)}
-                  color="#2080F0"
-                  uncheckedColor="#ccc"
+                  color='#2080F0'
+                  uncheckedColor='#ccc'
                   // 增大 Checkbox 尺寸
                   // @ts-ignore
                   style={{transform: [{scale: 1.5}]}}

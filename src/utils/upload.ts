@@ -14,10 +14,7 @@ export const generateFileName = (path: string) => {
 
 import {api} from '@/api/request';
 export const getPreSignedUrl = async (fileName: string, parentDir?: string) => {
-  const res = await api.get<{objectKey: string; preSignedUrl: string}>(
-    '/file/getUploadUrl',
-    {fileName, parentDir},
-  );
+  const res = await api.get<{objectKey: string; preSignedUrl: string}>('/file/getUploadUrl', {fileName, parentDir});
   console.log('_________________________ ~ getPreSignedUrl ~ res:', res);
 
   if (!res.data) throw new Error('上传接口返回数据异常');

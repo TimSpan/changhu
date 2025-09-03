@@ -1,15 +1,6 @@
 import React, {useState} from 'react';
 import Toast from 'react-native-toast-message';
-import {
-  StyleSheet,
-  SafeAreaView,
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
+import {StyleSheet, SafeAreaView, View, Text, TouchableOpacity, TextInput, ActivityIndicator, Alert} from 'react-native';
 
 import {CustomIcon} from '@/components/CustomIcon/index';
 import {encryptStr} from '@/utils';
@@ -88,11 +79,7 @@ export default function Login() {
       {toast ? <UseToast message={toast} onClose={() => setToast('')} /> : null}
       <View style={styles.container}>
         <View style={styles.header}>
-          <CustomIcon
-            width={80}
-            height={80}
-            style={{marginBottom: 15, marginTop: 15, alignSelf: 'center'}}
-          />
+          <CustomIcon width={80} height={80} style={{marginBottom: 15, marginTop: 15, alignSelf: 'center'}} />
 
           <Text style={styles.title}>
             欢迎登录<Text style={{color: '#2080F0'}}>隆吉安保</Text>
@@ -103,22 +90,17 @@ export default function Login() {
           <View style={styles.input}>
             <Text style={styles.inputLabel}>账号</Text>
             <TextInput
-              autoCapitalize="none"
+              autoCapitalize='none'
               autoCorrect={false}
-              clearButtonMode="while-editing"
-              keyboardType="name-phone-pad"
+              clearButtonMode='while-editing'
+              keyboardType='name-phone-pad'
               onChangeText={tel => setForm({...form, tel})}
-              placeholder="请输入手机号"
-              placeholderTextColor="#6b7280"
+              placeholder='请输入手机号'
+              placeholderTextColor='#6b7280'
               value={form.tel}
-              style={[
-                styles.inputControl,
-                errors.tel ? {borderColor: 'red'} : null,
-              ]}
+              style={[styles.inputControl, errors.tel ? {borderColor: 'red'} : null]}
             />
-            {errors.tel ? (
-              <Text style={styles.errorText}>{errors.tel}</Text>
-            ) : null}
+            {errors.tel ? <Text style={styles.errorText}>{errors.tel}</Text> : null}
           </View>
 
           <View style={styles.input}>
@@ -126,31 +108,20 @@ export default function Login() {
 
             <TextInput
               autoCorrect={false}
-              clearButtonMode="while-editing"
+              clearButtonMode='while-editing'
               onChangeText={password => setForm({...form, password})}
-              placeholder="请输入密码"
-              placeholderTextColor="#6b7280"
+              placeholder='请输入密码'
+              placeholderTextColor='#6b7280'
               secureTextEntry={true}
               value={form.password}
-              style={[
-                styles.inputControl,
-                errors.tel ? {borderColor: 'red'} : null,
-              ]}
+              style={[styles.inputControl, errors.tel ? {borderColor: 'red'} : null]}
             />
-            {errors.password ? (
-              <Text style={styles.errorText}>{errors.password}</Text>
-            ) : null}
+            {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
           </View>
 
           <View style={styles.formAction}>
             <TouchableOpacity onPress={login}>
-              <View style={styles.btn}>
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.btnText}>登录</Text>
-                )}
-              </View>
+              <View style={styles.btn}>{loading ? <ActivityIndicator color='#fff' /> : <Text style={styles.btnText}>登录</Text>}</View>
             </TouchableOpacity>
           </View>
         </View>
