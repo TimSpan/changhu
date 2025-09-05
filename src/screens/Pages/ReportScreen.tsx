@@ -9,6 +9,7 @@ import {TextInput} from 'react-native-paper';
 import EventTypeBottomSheet from '@/components/EventTypeBottomSheet';
 import {generateFileName, getPreSignedUrl, getPreSignedUrlFromKey} from '@/utils/upload';
 import LoadingOverlay from '@/components/LoadingOverlay';
+import {takeMediaUpload} from '@/components/TakeMedia';
 const {width} = Dimensions.get('window');
 export const ReportScreen = () => {
   const {myProject} = useProject();
@@ -35,63 +36,42 @@ export const ReportScreen = () => {
   }, []);
 
   const takePhoto = async () => {
-    launchCamera({mediaType: 'photo', saveToPhotos: true}, async response => {
-      console.log('🍎 ~ takePhoto ~ response:', response);
-      if (!response.assets?.[0]) return;
-      const asset = response.assets[0];
-      const {uri, fileName, type} = asset;
-      if (!uri) return;
-      try {
-        setTitle('照片上传中...');
-        setActivityLoading(true);
-        const uploadName = fileName || generateFileName(uri);
-        const {objectKey, preSignedUrl} = await getPreSignedUrl(uploadName, 'your-parent-dir');
-        const res = await fetch(uri);
-        const blob = await res.blob();
-        await fetch(preSignedUrl, {
-          method: 'PUT',
-          body: blob,
-          headers: {'Content-Type': type || 'application/octet-stream'},
-        });
-        const previewUrl = await getPreSignedUrlFromKey(objectKey);
-        setImgList(prev => [...prev, previewUrl]);
-        setObjectKey(prev => [...prev, objectKey]);
-        setActivityLoading(false);
-      } catch (err) {
-        console.error('上传失败', err);
+    try {
+      setTitle('照片上传中...');
+      setActivityLoading(true);
+      const res = await takeMediaUpload('photo', 'your-parent-dir');
+      setImgList(prev => [...prev, res.previewUrl]);
+      setObjectKey(prev => [...prev, res.objectKey]);
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert('提示', error.message);
+      } else {
+        Alert.alert('提示', String(error));
       }
-    });
+    } finally {
+      setActivityLoading(false);
+    }
   };
   const removePhoto = (index: number) => {
     setImgList(prev => prev.filter((_, i) => i !== index));
   };
 
-  const takeVideo = () => {
-    launchCamera({mediaType: 'video', saveToPhotos: true}, async response => {
-      if (!response.assets?.[0]) return;
-      const asset = response.assets[0];
-      const {uri, fileName, type} = asset;
-      if (!uri) return;
-      try {
-        setTitle('视频上传中...');
-        setActivityLoading(true);
-        const uploadName = fileName || generateFileName(uri);
-        const {objectKey, preSignedUrl} = await getPreSignedUrl(uploadName, 'your-parent-dir');
-        const res = await fetch(uri);
-        const blob = await res.blob();
-        await fetch(preSignedUrl, {
-          method: 'PUT',
-          body: blob,
-          headers: {'Content-Type': type || 'application/octet-stream'},
-        });
-        const previewUrl = await getPreSignedUrlFromKey(objectKey);
-        setVideoUri(previewUrl);
-        setVideoObjectKey(objectKey);
-        setActivityLoading(false);
-      } catch (err) {
-        console.error('上传失败', err);
+  const takeVideo = async () => {
+    try {
+      setTitle('视频上传中...');
+      setActivityLoading(true);
+      const res = await takeMediaUpload('video', 'your-parent-dir');
+      setVideoUri(res.previewUrl);
+      setVideoObjectKey(res.objectKey);
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert('提示', error.message);
+      } else {
+        Alert.alert('提示', String(error));
       }
-    });
+    } finally {
+      setActivityLoading(false);
+    }
   };
 
   function clear() {

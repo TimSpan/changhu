@@ -12,7 +12,7 @@ type Props = {
 
 export const DialogWithCustom: React.FC<Props> = ({title = '保安信息', visible, close, confirm, children}) => (
   <Portal>
-    <Dialog onDismiss={close} visible={visible} style={{maxHeight: 0.6 * Dimensions.get('window').height, backgroundColor: '#fff', borderRadius: 0}}>
+    <Dialog visible={visible} style={{maxHeight: 0.6 * Dimensions.get('window').height, backgroundColor: '#fff', borderRadius: 0}}>
       <Dialog.Title>{title}</Dialog.Title>
       <Dialog.ScrollArea style={styles.smallPadding}>
         <ScrollView contentContainerStyle={styles.biggerPadding}>{children}</ScrollView>

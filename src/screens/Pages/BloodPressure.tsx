@@ -99,6 +99,7 @@ export const BloodPressure = ({navigation}: any) => {
           const permission = await Camera.requestCameraPermission();
 
           navigation.navigate('FaceRecognitionPunch');
+          // navigation.navigate('BloodForm');
         }}
       >
         <Text style={styles.fabText}>血压检测</Text>

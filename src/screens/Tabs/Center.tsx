@@ -70,11 +70,16 @@ export const Center = ({navigation}: Props) => {
             <AntDesign name={'thunderbolt'} size={26} color={'#2080F0'} />
             <Text style={{fontSize: 16}}>采集血压</Text>
           </TouchableOpacity>
-
-          <View style={{alignItems: 'center', flex: 1}}>
-            {/* <AntDesign name={'user-switch'} size={26} color={'#2080F0'} />
-            <Text style={{fontSize: 16}}>员工信息</Text> */}
-          </View>
+          <TouchableOpacity
+            style={{alignItems: 'center', flex: 1}}
+            activeOpacity={0.7}
+            onPress={() => {
+              navigation.navigate('Test');
+            }}
+          >
+            <AntDesign name={'thunderbolt'} size={26} color={'#2080F0'} />
+            <Text style={{fontSize: 16}}>测试</Text>
+          </TouchableOpacity>
           <View style={{alignItems: 'center', flex: 1}}>
             {/* <AntDesign name={'solution'} size={26} color={'#2080F0'} />
             <Text style={{fontSize: 16}}>岗位管理</Text> */}

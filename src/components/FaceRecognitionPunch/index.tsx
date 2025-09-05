@@ -21,24 +21,24 @@ export function FaceRecognitionPunch({navigation}: any): JSX.Element {
     processingRef.current = false;
   };
   const startFrameProcessing = () => {
+    photoRef.current = null;
     processingRef.current = true;
   };
 
   /**
    * @useFocusEffect 当返回这个页面时、可以这样做
    */
-  // useFocusEffect(
-  //   React.useCallback(() => {
-  //     // Do something when the screen is focused \ 在屏幕聚焦的时候做点什么
-  //     console.log('进入页面、可以开始检测');
-  //     photoRef.current = null;
-  //     startFrameProcessing();
-  //     return () => {
-  //       // Do something when the screen is unfocused \ 在屏幕没有聚焦的时候做点什么
-  //       // Useful for cleanup  \ 用于清理函数
-  //     };
-  //   }, []),
-  // );
+  useFocusEffect(
+    React.useCallback(() => {
+      // Do something when the screen is focused \ 在屏幕聚焦的时候做点什么
+      console.log('进入页面、可以开始检测');
+      startFrameProcessing();
+      return () => {
+        // Do something when the screen is unfocused \ 在屏幕没有聚焦的时候做点什么
+        // Useful for cleanup  \ 用于清理函数
+      };
+    }, []),
+  );
 
   const [user, setUser] = useState<User>();
   const [visible, setVisible] = useState<boolean>(false);
@@ -83,11 +83,11 @@ export function FaceRecognitionPunch({navigation}: any): JSX.Element {
   }, [cameraDevice, width, height]);
 
   const {stopListeners} = useFaceDetector(faceDetectionOptions);
-  const isFocused = useIsFocused();
+  const isFocused = useIsFocused(); // 当前页面（Screen）是不是在导航栈里处于 焦点状态。
   const appState = useAppState();
   const [showText, setShowText] = useState('');
 
-  const [isActive, setIsActive] = useState(true);
+  // const [isActive, setIsActive] = useState(true);
   const isCameraActive = !cameraPaused && isFocused && appState === 'active';
 
   //
@@ -227,7 +227,6 @@ export function FaceRecognitionPunch({navigation}: any): JSX.Element {
             {
               text: '确定',
               onPress: () => {
-                photoRef.current = null; // 清空，允许再次拍照
                 startFrameProcessing();
               },
             },
@@ -320,7 +319,7 @@ export function FaceRecognitionPunch({navigation}: any): JSX.Element {
             photo={true}
             ref={camera}
             style={StyleSheet.absoluteFill}
-            isActive={isActive}
+            isActive={isCameraActive}
             // @ts-ignore
             device={cameraDevice}
             onError={handleCameraMountError}
@@ -393,7 +392,7 @@ export function FaceRecognitionPunch({navigation}: any): JSX.Element {
           confirm={() => {
             setVisible(false);
             // 跳转页面
-            navigation.navigate('BloodForm');
+            navigation.navigate('BloodForm', {params: user});
           }}
         >
           <Text style={{fontSize: 20}}>姓名：{user?.name}</Text>
