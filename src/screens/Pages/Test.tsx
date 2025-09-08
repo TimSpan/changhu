@@ -1,12 +1,12 @@
 import React, {useState, useRef} from 'react';
-import {View, Text, Modal, Button, Image, StyleSheet, Dimensions, TouchableOpacity, Alert, PixelRatio} from 'react-native';
+import {View, Text, Modal, Button, Image, StyleSheet, Dimensions, TouchableOpacity, Alert, PixelRatio, ScrollView} from 'react-native';
 import {SketchCanvas} from '@sourcetoad/react-native-sketch-canvas';
 import RNPhotoManipulator from 'react-native-photo-manipulator';
-import {Buffer} from 'buffer';
 import {Skia} from '@shopify/react-native-skia';
+import {Buffer} from 'buffer';
 import RNFS from 'react-native-fs';
 const {width} = Dimensions.get('window');
-export function Test() {
+export function Test({navigation}: any) {
   const [modalVisible, setModalVisible] = useState(false);
   const [signatures, setSignatures] = useState<string[]>([]);
   const canvasRef = useRef<any>(null);
@@ -59,10 +59,18 @@ export function Test() {
   };
 
   return (
-    <View style={{flex: 1, padding: 20}}>
-      <Button title='签名' onPress={() => setModalVisible(true)} />
-      {resultPath && <Image source={{uri: resultPath}} style={{width: width, height: 100}} resizeMode='contain'></Image>}
+    <View style={{flex: 1}}>
+      <ScrollView style={{flex: 1, padding: 20}}>
+        <Button title='签名' onPress={() => setModalVisible(true)} />
+        {resultPath && <Image source={{uri: resultPath}} style={{width: width, height: 100}} resizeMode='contain'></Image>}
+      </ScrollView>
 
+      <Button
+        title='测试'
+        onPress={() => {
+          navigation.navigate('BloodForm');
+        }}
+      />
       <Modal visible={modalVisible} animationType='slide'>
         <View style={styles.modal}>
           <View style={{flexDirection: 'row', height: 82, backgroundColor: '#ccc'}}>

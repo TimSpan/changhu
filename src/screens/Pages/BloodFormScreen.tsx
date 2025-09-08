@@ -1,28 +1,30 @@
 import {useSkipBack} from '@/hooks/useSkipBack';
-import {Text, View, TextInput, Button, Alert, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Image} from 'react-native';
+import {Buffer} from 'buffer';
+import RNFS from 'react-native-fs';
+import RNPhotoManipulator from 'react-native-photo-manipulator';
+import {Text, View, TextInput, Button, Alert, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Image, Modal, PixelRatio} from 'react-native';
 import {TextInput as TextInputPaper, Button as NButton} from 'react-native-paper';
 import {useForm, Controller} from 'react-hook-form';
-import {useState} from 'react';
+import {useRef, useState} from 'react';
 import {useProject} from '@/stores/userProject';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import LoadingOverlay from '@/components/LoadingOverlay';
-const {width} = Dimensions.get('window');
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {RootStackParamList} from '@/navigation/types';
 import {takeMediaUpload} from '@/components/TakeMedia';
 import {ImageLibraryOptions, launchImageLibrary} from 'react-native-image-picker';
 import DialogWithRadioBtns from '@/components/DialogWithRadioBtns';
+import {SketchCanvas} from '@sourcetoad/react-native-sketch-canvas';
+import {Skia} from '@shopify/react-native-skia';
+import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import type {RootStackParamList} from '@/navigation/types';
 type Props = NativeStackScreenProps<RootStackParamList, 'BloodForm'>;
+const {width} = Dimensions.get('window');
 export function BloodFormScreen({route, navigation}: Props) {
   console.log('route.params', route.params);
   useSkipBack<RootStackParamList>(2, 'BloodForm');
   const {myProject} = useProject();
-
   const [visible, setVisible] = useState<boolean>(false);
-
   const [loading, setLoading] = useState<boolean>(false);
   const [title, setTitle] = useState<string>('照片上传中...');
-
   const [activityLoading, setActivityLoading] = useState<boolean>(false);
   const [face, setFace] = useState<string>();
   const [confirmAction, setConfirmAction] = useState<((val?: string) => void) | null>(null);
@@ -96,11 +98,55 @@ export function BloodFormScreen({route, navigation}: Props) {
       actions[val]?.();
     });
   }
+  const canvasRef = useRef<any>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [signatures, setSignatures] = useState<string[]>([]);
+  const [IMAGE_WIDTH, setIMAGE_WIDTH] = useState<number>(0);
+  const [IMAGE_HEIGHT, setIMAGE_HEIGHT] = useState<number>(0);
+  const [resultPath, setResultPath] = useState<string | null>(null);
+  const handleSave = async () => {
+    canvasRef.current.save('jpg', false, 'signatures', String(Date.now()), true, false, false);
+  };
+
+  const mergeImages = async (backgroundUri: string, signatures: string[]) => {
+    let result = backgroundUri;
+    for (let i = 0; i < signatures.length; i++) {
+      result = await RNPhotoManipulator.overlayImage(result, signatures[i], {x: IMAGE_WIDTH * i, y: 0});
+      console.log(`拼接图路径: ${result}`);
+    }
+    return result;
+  };
+
+  // 提交所有签名
+  const signSubmit = async () => {
+    setModalVisible(false);
+    const totalWidth = IMAGE_WIDTH * signatures.length;
+    const maxHeight = IMAGE_HEIGHT;
+    console.log('背景图的宽高', totalWidth, maxHeight);
+    const surface = Skia.Surface.MakeOffscreen(totalWidth, maxHeight)!;
+    const canvas = surface.getCanvas();
+    // 填充白色背景
+    const paint = Skia.Paint();
+    paint.setColor(Skia.Color('white'));
+    canvas.drawRect(Skia.XYWHRect(0, 0, totalWidth, maxHeight), paint);
+    // 1. 导出内存里的图像
+    const mergedImage = surface.makeImageSnapshot();
+    // 2. 编码成 PNG / JPG 二进制
+    const bytes = mergedImage.encodeToBytes(); // Uint8Array
+    // 3. 写入文件系统
+    const filePath = `${RNFS.CachesDirectoryPath}/background.png`;
+    await RNFS.writeFile(filePath, Buffer.from(bytes).toString('base64'), 'base64');
+    // 4. 得到本地图片路径
+    const backgroundUri = 'file://' + filePath;
+    console.log('创建背景图片路径:', backgroundUri);
+    // 使用
+    const finalPath = await mergeImages(backgroundUri, signatures);
+    setResultPath(finalPath);
+  };
 
   return (
     <View style={{flex: 1}}>
-      <ScrollView style={{flex: 1, margin: 10}}>
-        {/* 上传照片 */}
+      <ScrollView style={{flex: 1, padding: 8}}>
         <Controller
           name='face'
           control={control}
@@ -152,7 +198,7 @@ export function BloodFormScreen({route, navigation}: Props) {
           )}
         />
         {errors.face && <Text style={styles.errorText}>请上传照片</Text>}
-        {/* 血压高 */}
+
         <Controller
           control={control}
           rules={{
@@ -167,7 +213,7 @@ export function BloodFormScreen({route, navigation}: Props) {
           name='high'
         />
         {errors.high && <Text style={styles.errorText}>请输入血压高</Text>}
-        {/* 血压低 */}
+
         <Controller
           control={control}
           rules={{
@@ -183,7 +229,6 @@ export function BloodFormScreen({route, navigation}: Props) {
         />
         {errors.low && <Text style={styles.errorText}>请输入血压低</Text>}
 
-        {/* 心跳 */}
         <Controller
           control={control}
           rules={{
@@ -199,36 +244,38 @@ export function BloodFormScreen({route, navigation}: Props) {
         />
         {errors.heartbeat && <Text style={styles.errorText}>请输入每分钟心跳</Text>}
 
-        {/* 签名 */}
         <Controller
           control={control}
           rules={{
             required: true,
           }}
           render={({field: {onChange, onBlur, value}}) => (
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{color: '#FF0000'}}>*</Text>
-              <NButton
-                style={{
-                  borderRadius: 0,
-                  marginTop: 5,
-                  marginBottom: 5,
-                  backgroundColor: '#2080F0',
-                }}
-                mode='contained'
-                onPress={() => {
-                  navigation.navigate('Test');
-                }}
-              >
-                去签名
-              </NButton>
+            <View>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text style={{color: '#FF0000'}}>*</Text>
+                <NButton
+                  style={{
+                    borderRadius: 0,
+                    margin: 8,
+                    backgroundColor: '#2080F0',
+                  }}
+                  mode='contained'
+                  onPress={() => {
+                    // navigation.navigate('Test');
+                    setModalVisible(true);
+                  }}
+                >
+                  去签名
+                </NButton>
+              </View>
+
+              {resultPath && <Image source={{uri: resultPath}} style={{height: 100}} resizeMode='contain'></Image>}
             </View>
           )}
           name='signature'
         />
         {errors.signature && <Text style={styles.errorText}>请签名</Text>}
 
-        {/* 备注 */}
         <Controller
           control={control}
           rules={{
@@ -245,7 +292,6 @@ export function BloodFormScreen({route, navigation}: Props) {
         {errors.remark && <Text style={styles.errorText}>请输入备注</Text>}
         <LoadingOverlay visible={activityLoading} title={title} />
       </ScrollView>
-
       <TouchableOpacity onPress={handleSubmit(onSubmit)}>
         <View style={styles.submitBtn}>{loading ? <ActivityIndicator color='#fff' /> : <Text style={styles.submitBtnText}>确认</Text>}</View>
       </TouchableOpacity>
@@ -270,6 +316,70 @@ export function BloodFormScreen({route, navigation}: Props) {
           setVisible(false);
         }}
       ></DialogWithRadioBtns>
+
+      <Modal visible={modalVisible} animationType='slide'>
+        <View style={styles.modal}>
+          <View style={{flexDirection: 'row', height: 82, backgroundColor: '#ccc'}}>
+            {signatures.length > 0 &&
+              signatures.map((uri, index) => {
+                return <Image key={index} source={{uri}} style={{width: 100, height: 80, borderWidth: 1, borderColor: 'black'}} resizeMode='contain'></Image>;
+              })}
+          </View>
+
+          <SketchCanvas
+            ref={canvasRef}
+            style={{flex: 1, backgroundColor: 'white'}}
+            strokeColor='black'
+            strokeWidth={3}
+            onSketchSaved={(success, path) => {
+              if (success) {
+                const imageUri = 'file://' + path;
+                Image.getSize(
+                  imageUri,
+                  (width, height) => {
+                    setIMAGE_WIDTH(PixelRatio.getPixelSizeForLayoutSize(width));
+                    setIMAGE_HEIGHT(PixelRatio.getPixelSizeForLayoutSize(height));
+                  },
+                  error => {
+                    console.error('获取图片尺寸失败:', error);
+                  },
+                );
+
+                setSignatures([...signatures, imageUri]);
+                canvasRef.current.clear();
+              }
+            }}
+          />
+
+          <View style={styles.footer}>
+            <TouchableOpacity
+              onPress={() => {
+                setModalVisible(false);
+                setSignatures([]);
+              }}
+            >
+              <View style={styles.signBtn}>
+                <Text style={styles.signBtnText}>取消</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => canvasRef.current.clear()}>
+              <View style={styles.signBtn}>
+                <Text style={styles.signBtnText}>重写</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleSave}>
+              <View style={styles.signBtn}>
+                <Text style={styles.signBtnText}>保存</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={signSubmit}>
+              <View style={styles.signBtn}>
+                <Text style={styles.signBtnText}>提交</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -290,6 +400,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
   },
 
   submitBtnText: {
@@ -312,9 +425,9 @@ const styles = StyleSheet.create({
     height: 100,
     width: 100,
     backgroundColor: '#fafafa',
-    borderWidth: 1, // 边框宽度
-    borderColor: '#aaa', // 边框颜色
-    borderStyle: 'dashed', // 边框样式：'solid' | 'dashed' | 'dotted'
+    borderWidth: 1,
+    borderColor: '#aaa',
+    borderStyle: 'dashed',
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
@@ -325,5 +438,22 @@ const styles = StyleSheet.create({
     width: 100,
     marginLeft: 10,
     borderRadius: 10,
+  },
+  modal: {flex: 1, backgroundColor: 'white'},
+  title: {fontSize: 24, textAlign: 'center', margin: 10},
+  footer: {flexDirection: 'row'},
+
+  signBtn: {
+    height: 50,
+    width: width / 4,
+    backgroundColor: '#2080F0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signBtnText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#fff',
   },
 });

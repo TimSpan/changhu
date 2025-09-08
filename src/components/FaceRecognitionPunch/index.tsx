@@ -1,5 +1,5 @@
 import React, {JSX, useEffect, useMemo, useRef, useState} from 'react';
-import {StyleSheet, Text, Button, View, useWindowDimensions, Platform, Alert, TouchableOpacity} from 'react-native';
+import {StyleSheet, Text, Button, View, useWindowDimensions, Platform, Alert, TouchableOpacity, ScrollView} from 'react-native';
 import {CameraPosition, DrawableFrame, Frame, PhotoFile, Camera as VisionCamera, useCameraDevice, useCameraPermission} from 'react-native-vision-camera';
 import {useFocusEffect, useIsFocused} from '@react-navigation/core';
 import {useAppState} from '@react-native-community/hooks';
@@ -303,63 +303,66 @@ export function FaceRecognitionPunch({navigation}: any): JSX.Element {
   const boxTop = (height - BOX_HEIGHT) / 2;
   const boxRight = boxLeft + BOX_WIDTH;
   const boxBottom = boxTop + BOX_HEIGHT;
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          {
-            alignItems: 'center',
-            justifyContent: 'center',
-          },
-        ]}
-      >
-        <>
-          <Camera
-            photo={true}
-            ref={camera}
-            style={StyleSheet.absoluteFill}
-            isActive={isCameraActive}
-            // @ts-ignore
-            device={cameraDevice}
-            onError={handleCameraMountError}
-            onUIRotationChanged={handleUiRotation}
-            // @ts-ignore
+    <View style={styles.container}>
+      {isFocused ? (
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+          ]}
+        >
+          <>
+            <Camera
+              photo={true}
+              ref={camera}
+              style={StyleSheet.absoluteFill}
+              isActive={isCameraActive}
+              // @ts-ignore
+              device={cameraDevice}
+              onError={handleCameraMountError}
+              onUIRotationChanged={handleUiRotation}
+              // @ts-ignore
 
-            faceDetectionOptions={{
-              ...faceDetectionOptions,
-              autoMode,
-              cameraFacing,
-            }}
-            faceDetectionCallback={handleFacesDetected}
-            skiaActions={handleSkiaActions}
-          />
-          {/* 中间虚线框 */}
-          <View
-            style={{
-              position: 'absolute',
-              left: boxLeft,
-              top: boxTop,
-              width: BOX_WIDTH,
-              height: BOX_HEIGHT,
-              borderWidth: 2,
-              borderColor: 'white',
-              borderStyle: 'dashed',
-            }}
-          />
+              faceDetectionOptions={{
+                ...faceDetectionOptions,
+                autoMode,
+                cameraFacing,
+              }}
+              faceDetectionCallback={handleFacesDetected}
+              skiaActions={handleSkiaActions}
+            />
 
-          <TouchableOpacity
-            style={styles.fab}
-            onPress={async () => {
-              setCameraFacing(current => (current === 'front' ? 'back' : 'front'));
-            }}
-          >
-            <Text style={styles.fabText}>切换镜头</Text>
-          </TouchableOpacity>
+            <View
+              style={{
+                position: 'absolute',
+                left: boxLeft,
+                top: boxTop,
+                width: BOX_WIDTH,
+                height: BOX_HEIGHT,
+                borderWidth: 2,
+                borderColor: 'white',
+                borderStyle: 'dashed',
+              }}
+            />
 
-          <Animated.View style={boundingBoxStyle} />
-        </>
-      </View>
+            <TouchableOpacity
+              style={styles.fab}
+              onPress={async () => {
+                setCameraFacing(current => (current === 'front' ? 'back' : 'front'));
+              }}
+            >
+              <Text style={styles.fabText}>切换镜头</Text>
+            </TouchableOpacity>
+
+            <Animated.View style={boundingBoxStyle} />
+          </>
+        </View>
+      ) : null}
 
       <View
         style={{
@@ -382,31 +385,29 @@ export function FaceRecognitionPunch({navigation}: any): JSX.Element {
           {showText}
         </Text>
         <LoadingOverlay visible={activityLoading} title={title} />
-
-        <DialogWithCustom
-          visible={visible}
-          close={() => {
-            startFrameProcessing();
-            setVisible(false);
-          }}
-          confirm={() => {
-            setVisible(false);
-            // 跳转页面
-            navigation.navigate('BloodForm', {params: user});
-          }}
-        >
-          <Text style={{fontSize: 20}}>姓名：{user?.name}</Text>
-          <Text style={{fontSize: 20}}>性别：{user?.sex.label}</Text>
-        </DialogWithCustom>
       </View>
-    </SafeAreaView>
+      <DialogWithCustom
+        visible={visible}
+        close={() => {
+          startFrameProcessing();
+          setVisible(false);
+        }}
+        confirm={() => {
+          setVisible(false);
+          // 跳转页面
+          navigation.navigate('BloodForm', {params: user});
+        }}
+      >
+        <Text style={{fontSize: 20, margin: 8}}>姓名：{user?.name}</Text>
+        <Text style={{fontSize: 20, margin: 8}}>性别：{user?.sex.label}</Text>
+      </DialogWithCustom>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
   },
   fab: {
     position: 'absolute',

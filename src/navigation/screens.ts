@@ -47,6 +47,7 @@ export const screens: ScreenConfig[] = [
       headerStyle: {backgroundColor: '#007bff'},
       headerTintColor: '#fff',
       headerShown: false,
+      // unmountOnBlur: true, // 离开时卸载页面、这个属性 已经在7.0 版本后 弃用
     },
   },
 
