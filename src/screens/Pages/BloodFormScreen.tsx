@@ -1,6 +1,7 @@
 import {useSkipBack} from '@/hooks/useSkipBack';
 import {Buffer} from 'buffer';
 import RNFS from 'react-native-fs';
+import {launchCamera, MediaType} from 'react-native-image-picker';
 import RNPhotoManipulator from 'react-native-photo-manipulator';
 import {Text, View, TextInput, Button, Alert, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Image, Modal, PixelRatio} from 'react-native';
 import {TextInput as TextInputPaper, Button as NButton} from 'react-native-paper';
@@ -15,7 +16,10 @@ import DialogWithRadioBtns from '@/components/DialogWithRadioBtns';
 import {SketchCanvas} from '@sourcetoad/react-native-sketch-canvas';
 import {Skia} from '@shopify/react-native-skia';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {StackActions} from '@react-navigation/native';
 import type {RootStackParamList} from '@/navigation/types';
+import {getPreSignedUrl, getPreSignedUrlFromKey} from '@/utils/upload';
+import {api} from '@/api/request';
 type Props = NativeStackScreenProps<RootStackParamList, 'BloodForm'>;
 const {width} = Dimensions.get('window');
 export function BloodFormScreen({route, navigation}: Props) {
@@ -27,6 +31,8 @@ export function BloodFormScreen({route, navigation}: Props) {
   const [title, setTitle] = useState<string>('照片上传中...');
   const [activityLoading, setActivityLoading] = useState<boolean>(false);
   const [face, setFace] = useState<string>();
+  const [faceBlob, setFaceBlob] = useState<any>(null);
+
   const [confirmAction, setConfirmAction] = useState<((val?: string) => void) | null>(null);
   const {
     control,
@@ -42,20 +48,74 @@ export function BloodFormScreen({route, navigation}: Props) {
       remark: '',
     },
   });
+  const [signObjectKey, setSignObjectKey] = useState<string | null>(null);
   const onSubmit = (data: any) => {
-    if (data) {
-      console.log('🍎 ~ onSubmit ~ data:', data);
-    } else {
-      Alert.alert('提示', '表单未填写完成');
+    if (!signObjectKey) {
+      Alert.alert('请签名');
+      return;
     }
+    const params = {
+      projectId: myProject?.snowFlakeId, //项目id
+      // @ts-ignore
+      baseUserId: route.params.params.snowFlakeId, //用户id
+      high: data.high,
+      low: data.high,
+      heartbeat: data.high,
+      remark: data.high,
+      signature: signObjectKey,
+    };
+
+    const formData = new FormData();
+
+    // 普通字段
+    formData.append('params', JSON.stringify(params));
+
+    // 文件字段
+    formData.append('face', {
+      uri: faceBlob.uri, // 本地文件路径
+      name: faceBlob.fileName || 'photo.jpg', // 文件名
+      type: faceBlob.type || 'image/jpeg', // MIME 类型
+    });
+    console.log('🍎 ~ onSubmit ~ formData:', formData);
+    console.log('🍎 ~ onSubmit ~ submitData:', {params: JSON.stringify(params), face: faceBlob});
+    setActivityLoading(true);
+    setTitle('采集上传中...');
+    api
+      .post('/wechat/inspect/bloodPressure', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      .then(res => {
+        console.log('🍎 ~ onSubmit ~ res:', res);
+
+        Alert.alert('提示', res.message, [
+          {
+            text: '确定',
+            style: 'destructive',
+            onPress: () => {
+              navigation.dispatch(StackActions.pop(2));
+            },
+          },
+        ]);
+      })
+      .catch(error => {
+        console.log('🍎 ~ onSubmit ~ error:', error);
+        Alert.alert('错误', error.message);
+      })
+      .finally(() => {
+        setActivityLoading(false);
+      });
   };
   const takePhoto = async (onChange: (val: string) => void) => {
     try {
-      setTitle('照片上传中...');
-      setActivityLoading(true);
-      const res = await takeMediaUpload('photo', 'your-parent-dir');
-      setFace(res.previewUrl);
-      onChange(res.objectKey);
+      launchCamera({mediaType: 'photo', saveToPhotos: true}, response => {
+        if (response.assets && response.assets[0].uri) {
+          setFace(response.assets[0].uri);
+          setFaceBlob(response.assets[0]);
+          onChange(response.assets[0].uri);
+        }
+      });
     } catch (error) {
       if (error instanceof Error) {
         Alert.alert('提示', error.message);
@@ -63,7 +123,6 @@ export function BloodFormScreen({route, navigation}: Props) {
         Alert.alert('提示', String(error));
       }
     } finally {
-      setActivityLoading(false);
     }
   };
 
@@ -74,15 +133,23 @@ export function BloodFormScreen({route, navigation}: Props) {
       quality: 1, // 图片质量（0-1）
     };
 
-    launchImageLibrary(options, res => {
-      if (res.didCancel) {
-        console.log('用户取消选择');
-      } else if (res.errorCode) {
-        Alert.alert('错误', res.errorMessage || '选择失败');
-      } else if (res.assets && res.assets.length > 0) {
-        console.log('🍎 ~ pickImage ~ res:', res);
+    try {
+      launchImageLibrary(options, response => {
+        console.log('🍎 ~ pickImage ~ response:', response);
+        if (response.assets && response.assets[0].uri) {
+          setFace(response.assets[0].uri);
+          setFaceBlob(response.assets[0]);
+          onChange(response.assets[0].uri);
+        }
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert('提示', error.message);
+      } else {
+        Alert.alert('提示', String(error));
       }
-    });
+    } finally {
+    }
   };
   function switchType(onChange: (val: string) => void) {
     setVisible(true);
@@ -112,41 +179,82 @@ export function BloodFormScreen({route, navigation}: Props) {
     let result = backgroundUri;
     for (let i = 0; i < signatures.length; i++) {
       result = await RNPhotoManipulator.overlayImage(result, signatures[i], {x: IMAGE_WIDTH * i, y: 0});
-      console.log(`拼接图路径: ${result}`);
+      // console.log(`拼接图路径: ${result}`);
     }
     return result;
   };
-
+  type UploadResult = {
+    objectKey: string;
+    previewUrl: string;
+  };
+  async function uploadSignPhoto(fileName: string, uri: string): Promise<UploadResult> {
+    try {
+      const uploadName = fileName;
+      const {objectKey, preSignedUrl} = await getPreSignedUrl(uploadName, 'sign');
+      const res = await fetch(uri);
+      const blob = await res.blob();
+      await fetch(preSignedUrl, {
+        method: 'PUT',
+        body: blob,
+        headers: {'Content-Type': 'image/jpeg'},
+      });
+      const previewUrl = await getPreSignedUrlFromKey(objectKey);
+      return {objectKey, previewUrl};
+    } catch (err) {
+      throw err; // 抛出异常，保证函数返回类型始终是 UploadResult 或异常
+    }
+  }
   // 提交所有签名
+
   const signSubmit = async () => {
+    if (signatures.length === 0) {
+      Alert.alert('请签名');
+      return;
+    }
     setModalVisible(false);
-    const totalWidth = IMAGE_WIDTH * signatures.length;
-    const maxHeight = IMAGE_HEIGHT;
-    console.log('背景图的宽高', totalWidth, maxHeight);
-    const surface = Skia.Surface.MakeOffscreen(totalWidth, maxHeight)!;
-    const canvas = surface.getCanvas();
-    // 填充白色背景
-    const paint = Skia.Paint();
-    paint.setColor(Skia.Color('white'));
-    canvas.drawRect(Skia.XYWHRect(0, 0, totalWidth, maxHeight), paint);
-    // 1. 导出内存里的图像
-    const mergedImage = surface.makeImageSnapshot();
-    // 2. 编码成 PNG / JPG 二进制
-    const bytes = mergedImage.encodeToBytes(); // Uint8Array
-    // 3. 写入文件系统
-    const filePath = `${RNFS.CachesDirectoryPath}/background.png`;
-    await RNFS.writeFile(filePath, Buffer.from(bytes).toString('base64'), 'base64');
-    // 4. 得到本地图片路径
-    const backgroundUri = 'file://' + filePath;
-    console.log('创建背景图片路径:', backgroundUri);
-    // 使用
-    const finalPath = await mergeImages(backgroundUri, signatures);
-    setResultPath(finalPath);
+    try {
+      setActivityLoading(true);
+      setTitle('签名上传中...');
+      const totalWidth = IMAGE_WIDTH * signatures.length;
+      const maxHeight = IMAGE_HEIGHT;
+      const surface = Skia.Surface.MakeOffscreen(totalWidth, maxHeight)!;
+      const canvas = surface.getCanvas();
+      // 填充白色背景
+      const paint = Skia.Paint();
+      paint.setColor(Skia.Color('white'));
+      canvas.drawRect(Skia.XYWHRect(0, 0, totalWidth, maxHeight), paint);
+      // 1. 导出内存里的图像
+      const mergedImage = surface.makeImageSnapshot();
+      // 2. 编码成 PNG / JPG 二进制
+      const bytes = mergedImage.encodeToBytes(); // Uint8Array
+      // 3. 写入文件系统
+      const filePath = `${RNFS.CachesDirectoryPath}/background.png`;
+      await RNFS.writeFile(filePath, Buffer.from(bytes).toString('base64'), 'base64');
+      // 4. 得到本地图片路径
+      const backgroundUri = 'file://' + filePath;
+      console.log('🍎 ~ signSubmit ~ backgroundUri:', backgroundUri);
+      // 使用
+      const finalPath = await mergeImages(backgroundUri, signatures);
+      const fileName = finalPath.split('/').pop() as string;
+
+      const {objectKey, previewUrl} = await uploadSignPhoto(fileName, finalPath);
+
+      setResultPath(previewUrl);
+      setSignObjectKey(objectKey);
+      setSignatures([]);
+    } catch (error) {
+      console.log('🍎 ~ signSubmit ~ error:', error);
+    } finally {
+      setActivityLoading(false);
+    }
   };
 
+  function toSign(onChange: (val: string) => void) {
+    setModalVisible(true);
+  }
   return (
     <View style={{flex: 1}}>
-      <ScrollView style={{flex: 1, padding: 8}}>
+      <ScrollView style={{flex: 1, margin: 8}}>
         <Controller
           name='face'
           control={control}
@@ -155,14 +263,12 @@ export function BloodFormScreen({route, navigation}: Props) {
           }}
           render={({field: {onChange, onBlur, value}}) => (
             <View style={{flexDirection: 'row', marginBottom: 10}}>
-              <Text style={{color: '#FF0000'}}>*</Text>
+              <Text style={styles.requiredStyle}>*</Text>
               <Text style={styles.bigText}>上传照片</Text>
 
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => {
-                  // takePhoto(onChange);
-                  // pickImage();
                   switchType(onChange);
                 }}
                 style={styles.upLoadStyle}
@@ -183,6 +289,7 @@ export function BloodFormScreen({route, navigation}: Props) {
                           style: 'destructive',
                           onPress: () => {
                             onChange('');
+                            setFace('');
                           },
                         },
                       ],
@@ -206,8 +313,8 @@ export function BloodFormScreen({route, navigation}: Props) {
           }}
           render={({field: {onChange, onBlur, value}}) => (
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{color: '#FF0000'}}>*</Text>
-              <TextInputPaper mode='outlined' style={styles.inputContainerStyle} dense label='血压高' placeholder='请输入血压高' value={value} onChangeText={onChange} />
+              <Text style={styles.requiredStyle}>*</Text>
+              <TextInputPaper keyboardType='numeric' mode='outlined' style={styles.inputContainerStyle} dense label='血压高' placeholder='请输入血压高' value={value} onChangeText={onChange} />
             </View>
           )}
           name='high'
@@ -221,8 +328,8 @@ export function BloodFormScreen({route, navigation}: Props) {
           }}
           render={({field: {onChange, onBlur, value}}) => (
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{color: '#FF0000'}}>*</Text>
-              <TextInputPaper mode='outlined' style={styles.inputContainerStyle} dense label='血压低' placeholder='请输入血压低' value={value} onChangeText={onChange} />
+              <Text style={styles.requiredStyle}>*</Text>
+              <TextInputPaper keyboardType='numeric' mode='outlined' style={styles.inputContainerStyle} dense label='血压低' placeholder='请输入血压低' value={value} onChangeText={onChange} />
             </View>
           )}
           name='low'
@@ -236,8 +343,8 @@ export function BloodFormScreen({route, navigation}: Props) {
           }}
           render={({field: {onChange, onBlur, value}}) => (
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{color: '#FF0000'}}>*</Text>
-              <TextInputPaper mode='outlined' style={styles.inputContainerStyle} dense label='每分钟心跳' placeholder='请输入每分钟心跳' value={value} onChangeText={onChange} />
+              <Text style={styles.requiredStyle}>*</Text>
+              <TextInputPaper keyboardType='numeric' mode='outlined' style={styles.inputContainerStyle} dense label='每分钟心跳' placeholder='请输入每分钟心跳' value={value} onChangeText={onChange} />
             </View>
           )}
           name='heartbeat'
@@ -247,12 +354,12 @@ export function BloodFormScreen({route, navigation}: Props) {
         <Controller
           control={control}
           rules={{
-            required: true,
+            required: false,
           }}
           render={({field: {onChange, onBlur, value}}) => (
             <View>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text style={{color: '#FF0000'}}>*</Text>
+                <Text style={styles.requiredStyle}>*</Text>
                 <NButton
                   style={{
                     borderRadius: 0,
@@ -261,8 +368,8 @@ export function BloodFormScreen({route, navigation}: Props) {
                   }}
                   mode='contained'
                   onPress={() => {
+                    toSign(onChange);
                     // navigation.navigate('Test');
-                    setModalVisible(true);
                   }}
                 >
                   去签名
@@ -283,7 +390,7 @@ export function BloodFormScreen({route, navigation}: Props) {
           }}
           render={({field: {onChange, onBlur, value}}) => (
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text style={{color: '#FF0000'}}>*</Text>
+              {/* <Text style={styles.requiredStyle}>*</Text> */}
               <TextInputPaper mode='outlined' multiline style={styles.fixedHeight} dense label='备注' placeholder='请输入备注' value={value} onChangeText={onChange} />
             </View>
           )}
@@ -400,9 +507,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
   },
 
   submitBtnText: {
@@ -455,5 +559,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: '#fff',
+  },
+  requiredStyle: {
+    fontSize: 22,
+    color: '#FF0000',
   },
 });

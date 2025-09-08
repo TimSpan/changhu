@@ -64,7 +64,7 @@ export function FaceRecognitionPunch({navigation}: any): JSX.Element {
   const faceDetectionOptions = useMemo<FaceDetectionOptions>(() => {
     if (!cameraDevice)
       return {
-        performanceMode: 'accurate',
+        performanceMode: 'fast',
         classificationMode: 'none',
         contourMode: 'none', // 默认安全值
         landmarkMode: 'all',
@@ -73,7 +73,7 @@ export function FaceRecognitionPunch({navigation}: any): JSX.Element {
       };
 
     return {
-      performanceMode: 'accurate',
+      performanceMode: cameraDevice.position === 'back' ? 'accurate' : 'fast',
       classificationMode: cameraDevice.position === 'back' ? 'none' : 'all',
       contourMode: cameraDevice.position === 'back' ? 'none' : 'all',
       landmarkMode: 'all',
