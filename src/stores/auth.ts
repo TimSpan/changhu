@@ -1,34 +1,30 @@
-// src/store/auth.ts
 import {create} from 'zustand';
+import {persist, createJSONStorage} from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AuthState {
-  tokenName: string | null;
-  token: string | null;
-  setToken: (token: string, tokenName: string) => void;
-  logout: () => void;
-  restoreToken: () => Promise<void>;
+  tokenInfo: TokenInfo | null;
+  hasHydrated: boolean; // 标记是否已经恢复
+  setTokenInfo: (tokenInfo: TokenInfo) => void;
+  clearTokenInfo: () => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
-export const useAuthStore = create<AuthState>(set => ({
-  token: null,
-  tokenName: null,
-  setToken: async (token: string, tokenName: string) => {
-    await AsyncStorage.setItem('token', token);
-    await AsyncStorage.setItem('tokenName', tokenName);
-    set({token, tokenName});
-  },
-  logout: async () => {
-    await AsyncStorage.removeItem('token');
-    await AsyncStorage.removeItem('tokenName');
-
-    set({token: null});
-    set({tokenName: null});
-  },
-  restoreToken: async () => {
-    const token = await AsyncStorage.getItem('token');
-    const tokenName = await AsyncStorage.getItem('tokenName');
-    set({token});
-    set({tokenName});
-  },
-}));
+export const useAuthStore = create<AuthState>()(
+  persist(
+    set => ({
+      tokenInfo: null,
+      hasHydrated: false,
+      setTokenInfo: tokenInfo => set({tokenInfo}),
+      clearTokenInfo: () => set({tokenInfo: null}),
+      setHasHydrated: state => set({hasHydrated: state}),
+    }),
+    {
+      name: 'tokenInfo',
+      storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => state => {
+        state?.setHasHydrated(true);
+      },
+    },
+  ),
+);

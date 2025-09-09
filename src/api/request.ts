@@ -16,10 +16,14 @@ class RequestHttp {
     this.service.interceptors.request.use(
       async config => {
         config.headers.set('Client-Type', 'hand_device');
-        const token = await AsyncStorage.getItem('token');
-        const tokenName = await AsyncStorage.getItem('tokenName');
-        if (token && tokenName) {
-          config.headers.set(tokenName, token);
+        const tokenInfoJson = (await AsyncStorage.getItem('tokenInfo')) as string;
+        const {
+          state: {tokenInfo},
+        } = JSON.parse(tokenInfoJson);
+        console.log('🍎 ~ RequestHttp ~ constructor ~ tokenInfo:', tokenInfo);
+
+        if (tokenInfo) {
+          config.headers.set(tokenInfo.tokenInfo?.tokenName, tokenInfo.tokenInfo?.tokenValue);
         }
         return config;
       },

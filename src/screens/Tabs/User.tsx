@@ -6,12 +6,12 @@ import {Image, ImageBackground, ScrollView, StyleSheet, Text, View} from 'react-
 import {Button as NButton, Divider} from 'react-native-paper';
 
 export const User = () => {
-  const {clearMyProject} = useProject();
-  const {logout} = useAuthStore();
+  const {myProject, clearMyProject} = useProject();
+  const {clearTokenInfo} = useAuthStore();
 
   const logOut = () => {
     try {
-      logout();
+      clearTokenInfo();
       clearMyProject();
     } catch (error) {
       console.log('_________________________ ~ logout ~ error:', error);

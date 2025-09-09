@@ -22,8 +22,9 @@ function HomeStackScreen() {
         headerStyle: {backgroundColor: '#2080F0'},
         headerTintColor: '#fff',
         headerTitleAlign: 'center',
-      }}>
-      <RootStack.Screen name="Home" component={Home} options={{title: '打卡'}} />
+      }}
+    >
+      <RootStack.Screen name='Home' component={Home} options={{title: '打卡'}} />
     </RootStack.Navigator>
   );
 }
@@ -36,8 +37,9 @@ function CenterStackScreen() {
         headerTintColor: '#fff',
         headerTitleAlign: 'center',
         headerShown: false,
-      }}>
-      <RootStack.Screen name="Center" component={Center} options={{title: '功能中心'}} />
+      }}
+    >
+      <RootStack.Screen name='Center' component={Center} options={{title: '功能中心'}} />
     </RootStack.Navigator>
   );
 }
@@ -49,8 +51,9 @@ function UserStackScreen() {
         headerStyle: {backgroundColor: '#2080F0'},
         headerTintColor: '#fff',
         headerTitleAlign: 'center',
-      }}>
-      <RootStack.Screen name="User" component={User} options={{title: '我的'}} />
+      }}
+    >
+      <RootStack.Screen name='User' component={User} options={{title: '我的'}} />
     </RootStack.Navigator>
   );
 }
@@ -71,48 +74,46 @@ function MainTabs() {
         tabBarInactiveTintColor: 'gray',
         tabBarLabelStyle: {fontSize: 16}, // 调大字体
         tabBarStyle: {height: 60}, // 调高整个 tabBar
-      })}>
+      })}
+    >
       {/* <Tab.Screen
         name="home"
         component={HomeStackScreen}
         options={{title: '打卡'}}
       /> */}
 
-      <Tab.Screen name="center" component={CenterStackScreen} options={{title: '功能中心'}} />
-      <Tab.Screen name="user" component={UserStackScreen} options={{title: '我的'}} />
+      <Tab.Screen name='center' component={CenterStackScreen} options={{title: '功能中心'}} />
+      <Tab.Screen name='user' component={UserStackScreen} options={{title: '我的'}} />
     </Tab.Navigator>
   );
 }
 
 export function AppNavigation() {
-  const {token, restoreToken} = useAuthStore();
-  const {myProject, _hasHydrated} = useProject();
+  const {hasHydrated, tokenInfo} = useAuthStore();
+  const {_hasHydrated, myProject} = useProject();
   const [loading, setLoading] = React.useState(true);
   React.useEffect(() => {
-    // 等 token 恢复
-    restoreToken().finally(() => setLoading(false));
-  }, []);
-  // React.useEffect(() => {
-  //   if (_hasHydrated) {
-  //     console.log('rehydrated myProject:', myProject);
-  //   }
-  // }, [_hasHydrated, myProject]);
+    if (hasHydrated) {
+      setLoading(false);
+    }
+  }, [hasHydrated]);
+
   if (loading || !_hasHydrated) {
     return <SplashScreen />;
   }
 
   return (
     <RootStack.Navigator>
-      {token && myProject ? (
+      {tokenInfo && myProject ? (
         <>
-          <RootStack.Screen name="MainTabs" component={MainTabs} options={{headerShown: false}} />
+          <RootStack.Screen name='MainTabs' component={MainTabs} options={{headerShown: false}} />
 
           {screens.map(screen => (
             <RootStack.Screen key={screen.name} name={screen.name} component={screen.component} options={screen.options} />
           ))}
         </>
       ) : (
-        <RootStack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
+        <RootStack.Screen name='Login' component={LoginScreen} options={{headerShown: false}} />
       )}
     </RootStack.Navigator>
   );

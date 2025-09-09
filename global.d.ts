@@ -4,11 +4,6 @@ interface Option {
 }
 
 interface TokenMessage {
-  role: string;
-  tokenInfo: TokenInfo;
-}
-
-interface TokenInfo {
   isLogin: boolean;
   loginDevice: string;
   loginId: string;
@@ -20,6 +15,10 @@ interface TokenInfo {
   tokenSessionTimeout: string;
   tokenTimeout: string;
   tokenValue: string;
+}
+interface TokenInfo {
+  role?: string;
+  tokenInfo?: TokenMessage;
 }
 
 interface MyProject {

@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import Toast from 'react-native-toast-message';
 import {StyleSheet, SafeAreaView, View, Text, TouchableOpacity, TextInput, ActivityIndicator, Alert} from 'react-native';
-
 import {CustomIcon} from '@/components/CustomIcon/index';
 import {encryptStr} from '@/utils';
 import {api} from '@/api/request';
@@ -12,7 +11,9 @@ import {AxiosError} from 'axios';
 export default function Login() {
   const [toast, setToast] = useState('');
   const {setMyProject} = useProject();
-  const setToken = useAuthStore(state => state.setToken);
+
+  const {setTokenInfo} = useAuthStore();
+  // const setToken = useAuthStore(state => state.setToken);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     tel: '17346625362',
@@ -45,13 +46,13 @@ export default function Login() {
       setLoading(true);
       const encryptedText = encryptStr(form.password);
       try {
-        const res = await api.post<TokenMessage>('/login/handDevice', {
+        const res = await api.post<TokenInfo>('/login/handDevice', {
           tel: form.tel,
           password: encryptedText,
         });
         console.log('🍎 ~ login ~ res:', res);
         if (res) {
-          setToken(res.data.tokenInfo.tokenValue, res.data.tokenInfo.tokenName);
+          setTokenInfo(res.data);
         }
 
         const result = await api.get<MyProject>('/wechat/common/getMyProject');
