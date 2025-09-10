@@ -1,6 +1,9 @@
 interface Option {
   label: string;
   value: string;
+  extData?: {
+    type: string;
+  };
 }
 
 interface TokenMessage {

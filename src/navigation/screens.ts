@@ -5,6 +5,7 @@ import {BloodPressure} from '@/screens/Pages/BloodPressure';
 import {FaceRecognitionPunch} from '@/components/FaceRecognitionPunch';
 import {BloodFormScreen} from '@/screens/Pages/BloodFormScreen';
 import {Test} from '@/screens/Pages/Test';
+import {PatrolDetails} from '@/screens/Pages/PatrolDetailsScreen';
 type ScreenConfig = {
   name: keyof RootStackParamList; // 强制 name 属于 RootStackParamList
   component: React.ComponentType<any>;
@@ -25,11 +26,21 @@ export const screens: ScreenConfig[] = [
     name: 'Patrol',
     component: PatrolScreen,
     options: {
-      title: '巡逻',
+      title: '巡逻点列表',
       headerStyle: {backgroundColor: '#007bff'},
       headerTintColor: '#fff',
     },
   },
+  {
+    name: 'PatrolDetails',
+    component: PatrolDetails,
+    options: {
+      title: '巡逻打卡',
+      headerStyle: {backgroundColor: '#007bff'},
+      headerTintColor: '#fff',
+    },
+  },
+
   {
     name: 'BloodPressure',
     component: BloodPressure,

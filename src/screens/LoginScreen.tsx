@@ -50,19 +50,19 @@ export default function Login() {
           tel: form.tel,
           password: encryptedText,
         });
-        console.log('🍎 ~ login ~ res:', res);
+        console.log('获取登录信息', res);
         if (res) {
           setTokenInfo(res.data);
         }
 
         const result = await api.get<MyProject>('/wechat/common/getMyProject');
-        console.log('🍎 ~ login ~ result:', result);
+        console.log('我的项目', result);
         if (result) {
           setMyProject(result.data);
         }
       } catch (error) {
         const err = error as AxiosError<JsonResult<any>>;
-        console.log('🍎 ~ login ~ error:', error);
+        console.log('错误提示', error);
         Alert.alert('提示', err.message);
       } finally {
         setLoading(false);

@@ -14,6 +14,8 @@ export type RootStackParamList = {
   // 子页面
   Report: undefined;
   Patrol: undefined;
+
+  PatrolDetails: {id: string};
   BloodPressure: undefined;
   FaceRecognitionPunch: undefined;
   BloodForm: {params: User};

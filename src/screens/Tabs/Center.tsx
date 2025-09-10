@@ -1,8 +1,10 @@
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {NativeModules, PermissionsAndroid, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {AntDesign} from '@react-native-vector-icons/ant-design';
 import {Divider} from 'react-native-paper';
 import {RootStackParamList} from '@/navigation/types';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useEffect} from 'react';
+import {Camera} from 'react-native-vision-camera';
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 interface Props {
@@ -10,6 +12,34 @@ interface Props {
 }
 
 export const Center = ({navigation}: Props) => {
+  // Android 动态请求定位权限
+  const requestLocationPermission = async () => {
+    if (Platform.OS === 'android') {
+      const fine = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+      const coarse = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION);
+      const permission = await Camera.requestCameraPermission();
+      return fine === PermissionsAndroid.RESULTS.GRANTED && coarse === PermissionsAndroid.RESULTS.GRANTED;
+    }
+    return true;
+  };
+
+  const {MyAmapLocation} = NativeModules;
+  async function fetchLocation() {
+    try {
+      const loc = await MyAmapLocation.startLocation();
+      console.log('高德定位结果:', loc);
+    } catch (e) {
+      console.error('高德定位失败:', e);
+    }
+  }
+  useEffect(() => {
+    (async () => {
+      const ok = await requestLocationPermission();
+      console.log('系统定位权限ok?', ok);
+      if (!ok) return;
+      fetchLocation();
+    })();
+  }, []);
   return (
     <View>
       <View style={{padding: 16}}>
@@ -24,14 +54,20 @@ export const Center = ({navigation}: Props) => {
         </Text>
         <Divider style={{marginTop: 10, marginBottom: 20}} />
         <View style={{flexDirection: 'row'}}>
-          <View style={{alignItems: 'center', flex: 1}}>
-            <AntDesign name={'safety-certificate'} size={26} color={'#2080F0'} />
+          <TouchableOpacity
+            style={{alignItems: 'center', flex: 1}}
+            activeOpacity={0.7}
+            onPress={() => {
+              navigation.navigate('Patrol');
+            }}
+          >
+            <AntDesign name='safety-certificate' size={26} color='#2080F0' />
             <Text style={{fontSize: 16}}>巡逻</Text>
-          </View>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={{alignItems: 'center', flex: 1}}
-            activeOpacity={0.7} // 点击时的透明度反馈
+            activeOpacity={0.7}
             onPress={() => {
               navigation.navigate('Report');
             }}

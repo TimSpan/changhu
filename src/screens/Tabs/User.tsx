@@ -2,30 +2,26 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import {useAuthStore} from '@/stores/auth';
 import {useState} from 'react';
 import {useProject} from '@/stores/userProject';
-import {Image, ImageBackground, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {Alert, Image, ImageBackground, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {Button as NButton, Divider} from 'react-native-paper';
-
-export const User = () => {
+export const User = ({navigation}: any) => {
   const {myProject, clearMyProject} = useProject();
-  const {clearTokenInfo} = useAuthStore();
-
+  const {tokenInfo, clearTokenInfo} = useAuthStore();
   const logOut = () => {
     try {
       clearTokenInfo();
       clearMyProject();
     } catch (error) {
-      console.log('_________________________ ~ logout ~ error:', error);
+      Alert.alert(error as string);
     }
   };
   const [visible, setVisible] = useState(false);
   return (
     <ScrollView>
       <View style={styles.container}>
-        {/* 上半部分：背景图 + 用户信息 */}
         <ImageBackground
           source={require('../../assets/banner.png')} // 本地图片路径
           style={styles.header}
-          // imageStyle={{borderBottomLeftRadius: 20, borderBottomRightRadius: 20}}
         >
           <View style={styles.userInfo}>
             <Image
@@ -33,7 +29,7 @@ export const User = () => {
               style={styles.avatar}
             />
             <View style={{marginLeft: 12}}>
-              <Text style={styles.name}>队长</Text>
+              <Text style={styles.name}>{tokenInfo?.role === 'SECURITY' ? '保安队员' : '队长 '}</Text>
               <View style={{flexDirection: 'row'}}>
                 <Text style={styles.role}>保安部门</Text>
                 <Text style={[styles.role, {marginLeft: 20}]}>未选择单位</Text>
@@ -42,11 +38,9 @@ export const User = () => {
           </View>
         </ImageBackground>
 
-        {/* 下半部分：其他功能列表 */}
         <View style={styles.content}>
-          {/* 这里可以放 List / Button / Icon 等 */}
-          <Text style={{lineHeight: 50}}>修改用户信息</Text>
-          <Divider />
+          {/* <Text style={{lineHeight: 50}}>修改用户信息</Text>
+          <Divider /> */}
           <Text style={{lineHeight: 50}}>意见收集</Text>
           <Divider />
           <Text style={{lineHeight: 50}}>关于App</Text>

@@ -76,12 +76,7 @@ function MainTabs() {
         tabBarStyle: {height: 60}, // 调高整个 tabBar
       })}
     >
-      {/* <Tab.Screen
-        name="home"
-        component={HomeStackScreen}
-        options={{title: '打卡'}}
-      /> */}
-
+      {/* <Tab.Screen name='home' component={HomeStackScreen} options={{title: '打卡'}} /> */}
       <Tab.Screen name='center' component={CenterStackScreen} options={{title: '功能中心'}} />
       <Tab.Screen name='user' component={UserStackScreen} options={{title: '我的'}} />
     </Tab.Navigator>

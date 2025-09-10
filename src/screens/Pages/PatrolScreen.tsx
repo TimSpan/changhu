@@ -1,86 +1,65 @@
 import {api} from '@/api/request';
+import {RootStackParamList} from '@/navigation/types';
+import {useAuthStore} from '@/stores/auth';
 import {useProject} from '@/stores/userProject';
-import React, {useState, useCallback} from 'react';
+import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import React, {useState, useCallback, useEffect} from 'react';
 import {SafeAreaView, StyleSheet, Text, View, FlatList, RefreshControl, TouchableOpacity} from 'react-native';
 import {Camera} from 'react-native-vision-camera';
-
-interface Item {
-  id: number;
-  name: string;
-  desc: string;
-}
-
-export const PatrolScreen = ({navigation}: any) => {
+import {SecurityMemberType} from './type';
+type Props = NativeStackScreenProps<RootStackParamList>;
+export const PatrolScreen = ({navigation}: Props) => {
+  // const {tokenInfo} = useAuthStore();
   const {myProject} = useProject();
-  const [data, setData] = useState<Item[]>(() =>
-    Array.from({length: 10}, (_, i) => ({
-      id: i + 1,
-      name: `张三${i + 1}`,
-      desc: `假数据 ${i + 1}`,
-    })),
-  );
-
+  const [data, setData] = useState<SecurityMemberType[]>();
   const [refreshing, setRefreshing] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
+  useEffect(() => {
+    onRefresh();
+  }, [myProject]);
 
   const patrolPoint = async () => {
-    // 队员的巡逻点列表
-    const resp = await api.get('/wechat/patrolPoint/securityteammember', {projectId: myProject?.snowFlakeId});
+    setRefreshing(true);
+    const resp = await api.get<SecurityMemberType[]>('/wechat/patrolPoint/securityteammember', {projectId: myProject?.snowFlakeId});
+    console.log('队员的巡逻点列表:', resp);
+    setData(resp.data);
+    setRefreshing(false);
   };
-  const securityCaptainList = async () => {
-    //  保安队长的巡逻列表
-    const resp = await api.get('/wechat/patrolPoint/securitycaptain', {projectId: myProject?.snowFlakeId});
-  };
-  //  async  function getPatrolPoint() {
-  //     await api.get('/wechat/patrolPoint/getPatrolPoint')
-  //   }
+
+  async function getPatrolPoint() {
+    await api.get('/wechat/patrolPoint/getPatrolPoint');
+  }
   // 下拉刷新
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-
-
-    // setRefreshing(true);
-    // setTimeout(() => {
-    //   setData(prev =>
-    //     Array.from({length: 10}, (_, i) => ({
-    //       id: i + 1,
-    //       name: `张三${i + 1}`,
-    //       desc: `假数据 ${i + 1}`,
-    //     })),
-    //   );
-    //   setRefreshing(false);
-    // }, 1000);
+    patrolPoint();
   }, []);
 
-  // 上拉加载更多
-  const loadMore = useCallback(() => {
-    if (loadingMore) return;
-    if (data.length >= 50) return; // 不超过 50 条
-
-    setLoadingMore(true);
-    setTimeout(() => {
-      setData(prev => {
-        const start = prev.length + 1;
-        const more = Array.from({length: 10}, (_, i) => ({
-          id: start + i,
-          name: `张三${start + i}`,
-          desc: `假数据 ${start + i}`,
-        }));
-        return [...prev, ...more].slice(0, 50); // 保证最多 50
-      });
-      setLoadingMore(false);
-    }, 2000);
-  }, [data, loadingMore]);
-
-  const renderItem = ({item}: {item: Item}) => (
+  const renderItem = ({item}: {item: SecurityMemberType}) => (
     <View style={styles.itemBox}>
       <View>
-        <Text style={{fontSize: 16}}>{item.name}</Text>
-        <Text>{item.desc}</Text>
+        <Text style={{fontSize: 22}}>{item.name}</Text>
       </View>
-      <TouchableOpacity>
-        <Text style={{color: '#2080F0'}}>详情</Text>
-      </TouchableOpacity>
+
+      <View style={{flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16}}>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('PatrolDetails', {id: item.snowFlakeId});
+          }}
+        >
+          <View style={[styles.submitBtn, {backgroundColor: '#2080F0', width: 80}]}>
+            <Text style={styles.submitBtnText}>详情</Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('PatrolDetails', {id: item.snowFlakeId});
+          }}
+        >
+          <View style={[styles.submitBtn, {backgroundColor: '#00c48f', width: 120, marginLeft: 12}]}>
+            <Text style={styles.submitBtnText}>巡逻打卡</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -88,16 +67,15 @@ export const PatrolScreen = ({navigation}: any) => {
     <SafeAreaView style={styles.container}>
       <FlatList
         data={data}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={item => item.snowFlakeId}
         renderItem={renderItem}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2080F0']} tintColor='#2080F0' />}
       />
 
-      {/* 悬浮按钮 */}
       <TouchableOpacity
         style={styles.fab}
         onPress={async () => {
-          navigation.navigate('FaceRecognitionPunch');
+          // navigation.navigate('FaceRecognitionPunch');
         }}
       >
         <Text style={styles.fabText}>扫码</Text>
@@ -111,9 +89,7 @@ const styles = StyleSheet.create({
 
   itemBox: {
     backgroundColor: '#fff',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+
     padding: 16,
     borderRadius: 6,
     marginTop: 16,
@@ -147,5 +123,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 22,
     fontWeight: 'bold',
+  },
+
+  submitBtn: {
+    height: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 4,
+  },
+  submitBtnText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#fff',
   },
 });

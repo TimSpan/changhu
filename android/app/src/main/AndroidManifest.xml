@@ -1,23 +1,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-  <!-- 访问网络（高德地图需要联网加载瓦片和接口调用） -->
+
+  <!--允许访问网络，必选权限-->
   <uses-permission android:name="android.permission.INTERNET" />
 
-  <!-- 粗略定位（基于网络，如 Wi-Fi / 基站定位） -->
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-  <!-- 精确定位（基于 GPS 芯片） -->
+  <!--允许获取精确位置，精准定位必选-->
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
-  <!-- 额外的定位指令（部分机型需要，用于辅助定位） -->
-  <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+  <!--允许获取粗略位置，粗略定位必选-->
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-  <!-- 获取网络连接状态（判断是否有网络） -->
+  <!--允许获取网络状态，用于网络定位（无gps情况下的定位），若需网络定位功能则必选-->
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-  <!-- 获取 Wi-Fi 状态（辅助定位用） -->
+  <!--允许获取wifi网络信息，用于网络定位（无gps情况下的定位），若需网络定位功能则必选-->
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
-  <!-- 修改 Wi-Fi 状态（辅助定位时可能需要切换 Wi-Fi） -->
+  <!--允许获取wifi状态改变，用于网络定位（无gps情况下的定位），若需网络定位功能则必选-->
   <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
   <!-- 读取手机状态（高德 SDK 内部可能会用到设备信息做定位优化） -->
@@ -30,7 +28,8 @@
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
   <!-- 如果 targetSdkVersion >= 30，还要在 <application> 里加： -->
   <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-
+  <!--用于申请调用A-GPS模块,卫星定位加速-->
+  <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
   <!-- 相机权限 -->
   <uses-permission android:name="android.permission.CAMERA" />
 
@@ -49,7 +48,7 @@
     android:networkSecurityConfig="@xml/network_security_config"
   >
 
-
+    <service android:name="com.amap.api.location.APSService"></service>
     <!-- 高德地图 Android Key -->
 
     <meta-data
