@@ -15,6 +15,9 @@ import {StackActions} from '@react-navigation/native';
 const {width} = Dimensions.get('window');
 type Props = NativeStackScreenProps<RootStackParamList, 'PatrolDetails'>;
 export const PatrolDetails = ({route, navigation}: Props) => {
+  // console.log('是否扫码页跳转过来', route.params.isScan);
+  // console.log('巡逻点id', route.params.id);
+
   const pageType = route.params.type;
   const {myProject} = useProject();
   const [center, setCenter] = useState<{
@@ -36,7 +39,6 @@ export const PatrolDetails = ({route, navigation}: Props) => {
     fetchLocation();
   }, []);
 
-  console.log('🍎 id', route.params.id);
   const [imgList, setImgList] = useState<string[]>([]);
   const [imgKeyList, setImgKeyList] = useState<string[]>([]);
   const [videoUri, setVideoUri] = useState<string | null>(null);

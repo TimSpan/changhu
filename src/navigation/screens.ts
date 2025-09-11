@@ -6,6 +6,8 @@ import {FaceRecognitionPunch} from '@/screens/Pages/FaceRecognitionPunch';
 import {BloodFormScreen} from '@/screens/Pages/BloodFormScreen';
 import {Test} from '@/screens/Pages/Test';
 import {PatrolDetails} from '@/screens/Pages/PatrolDetailsScreen';
+import {CodeScannerPage} from '@/screens/Pages/ScanCamera';
+
 type ScreenConfig = {
   name: keyof RootStackParamList; // 强制 name 属于 RootStackParamList
   component: React.ComponentType<any>;
@@ -76,6 +78,17 @@ export const screens: ScreenConfig[] = [
     name: 'Test',
     component: Test,
     options: {
+      title: '测试',
+      headerStyle: {backgroundColor: '#007bff'},
+      headerTintColor: '#fff',
+    },
+  },
+
+  {
+    name: 'ScanCamera',
+    component: CodeScannerPage,
+    options: {
+      headerShown: false,
       title: '测试',
       headerStyle: {backgroundColor: '#007bff'},
       headerTintColor: '#fff',

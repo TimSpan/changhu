@@ -17,7 +17,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     tel: '17346625362',
-    // tel: '18711712226',
+    // tel: '13575126791',
     password: '123456',
   });
   const [errors, setErrors] = useState({tel: '', password: ''});

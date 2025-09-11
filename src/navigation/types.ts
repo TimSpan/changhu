@@ -15,8 +15,10 @@ export type RootStackParamList = {
   Report: undefined;
   Patrol: undefined;
 
-  PatrolDetails: {id: string; type: number};
+  PatrolDetails: {id: string; type: number; isScan: boolean};
   BloodPressure: undefined;
   FaceRecognitionPunch: undefined;
   BloodForm: {params: User};
+
+  ScanCamera: undefined;
 };
