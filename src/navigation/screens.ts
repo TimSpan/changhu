@@ -2,7 +2,7 @@ import {PatrolScreen} from '@/screens/Pages/PatrolScreen';
 import {ReportScreen} from '@/screens/Pages/ReportScreen';
 import {RootStackParamList} from './types';
 import {BloodPressure} from '@/screens/Pages/BloodPressure';
-import {FaceRecognitionPunch} from '@/components/FaceRecognitionPunch';
+import {FaceRecognitionPunch} from '@/screens/Pages/FaceRecognitionPunch';
 import {BloodFormScreen} from '@/screens/Pages/BloodFormScreen';
 import {Test} from '@/screens/Pages/Test';
 import {PatrolDetails} from '@/screens/Pages/PatrolDetailsScreen';

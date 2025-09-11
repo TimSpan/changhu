@@ -9,8 +9,8 @@ import {launchCamera, MediaType} from 'react-native-image-picker';
 export async function takeMediaUpload(type: MediaType, parentDir: string): Promise<{objectKey: string; previewUrl: string}> {
   return new Promise((resolve, reject) => {
     launchCamera({mediaType: type, saveToPhotos: true}, async response => {
-      if (response.didCancel) return reject(new Error('用户取消'));
-      if (response.errorCode) return reject(new Error(response.errorMessage || '打开相机失败'));
+      // if (response.didCancel) return reject(new Error('用户取消'));
+      // if (response.errorCode) return reject(new Error(response.errorMessage || '打开相机失败'));
       if (!response.assets?.[0]) return reject(new Error('未获取到照片或视频'));
       const asset = response.assets[0];
       const {uri, fileName, type} = asset;

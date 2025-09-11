@@ -1,6 +1,6 @@
 // 路由类型定义（TypeScript）
 
-import {User} from '@/components/FaceRecognitionPunch/type';
+import {User} from '@/screens/Pages/FaceRecognitionPunch/type';
 
 export type RootStackParamList = {
   Test: undefined;
@@ -15,7 +15,7 @@ export type RootStackParamList = {
   Report: undefined;
   Patrol: undefined;
 
-  PatrolDetails: {id: string};
+  PatrolDetails: {id: string; type: number};
   BloodPressure: undefined;
   FaceRecognitionPunch: undefined;
   BloodForm: {params: User};

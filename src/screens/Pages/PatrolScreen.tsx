@@ -42,7 +42,7 @@ export const PatrolScreen = ({navigation}: Props) => {
       <View style={{flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16}}>
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate('PatrolDetails', {id: item.snowFlakeId});
+            navigation.navigate('PatrolDetails', {id: item.snowFlakeId, type: 2});
           }}
         >
           <View style={[styles.submitBtn, {backgroundColor: '#2080F0', width: 80}]}>
@@ -52,7 +52,7 @@ export const PatrolScreen = ({navigation}: Props) => {
 
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate('PatrolDetails', {id: item.snowFlakeId});
+            navigation.navigate('PatrolDetails', {id: item.snowFlakeId, type: 1});
           }}
         >
           <View style={[styles.submitBtn, {backgroundColor: '#00c48f', width: 120, marginLeft: 12}]}>

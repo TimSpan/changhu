@@ -15,6 +15,7 @@ import {StackActions} from '@react-navigation/native';
 const {width} = Dimensions.get('window');
 type Props = NativeStackScreenProps<RootStackParamList, 'PatrolDetails'>;
 export const PatrolDetails = ({route, navigation}: Props) => {
+  const pageType = route.params.type;
   const {myProject} = useProject();
   const [center, setCenter] = useState<{
     latitude: number;
@@ -124,98 +125,103 @@ export const PatrolDetails = ({route, navigation}: Props) => {
   return (
     <View style={{flex: 1}}>
       <ScrollView style={{flex: 1, backgroundColor: '#ccc'}}>
-        <TopMessage id={route.params.id} />
+        <TopMessage id={route.params.id} type={pageType} />
 
-        <View style={{backgroundColor: '#fff'}}>
-          <View style={styles.center}>
-            {/* 上传照片： */}
-            <View style={{flexDirection: 'row', marginBottom: 10}}>
-              <Text style={styles.bigText}>上传照片：</Text>
+        {pageType === 1 && (
+          <View style={{backgroundColor: '#fff'}}>
+            <View style={styles.center}>
+              {/* 上传照片： */}
+              <View style={{flexDirection: 'row', marginBottom: 10}}>
+                <Text style={styles.bigText}>上传照片：</Text>
 
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => {
-                  takePhoto();
-                }}
-                style={styles.upLoadStyle}
-              >
-                <Ionicons name={'camera'} size={50} color={'#aaa'} />
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    takePhoto();
+                  }}
+                  style={styles.upLoadStyle}
+                >
+                  <Ionicons name={'camera'} size={50} color={'#aaa'} />
+                </TouchableOpacity>
+              </View>
 
-            {/* 照片列表 */}
-            {imgList.length > 0 && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false} // 隐藏横向滚动条，可选
-                contentContainerStyle={{padding: 10}} // 内容样式，可选
-              >
-                {imgList.map((uri, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onLongPress={() => {
-                      Alert.alert(
-                        '删除确认',
-                        '确定要删除这张图片吗？',
-                        [
-                          {text: '取消', style: 'cancel'},
-                          {
-                            text: '删除',
-                            style: 'destructive',
-                            onPress: () => removePhoto(index),
-                          },
-                        ],
-                        {cancelable: true},
-                      );
-                    }}
-                    delayLongPress={1000} // 长按 2 秒触发
-                  >
-                    <Image source={{uri}} style={styles.preview} />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            )}
-
-            {/* 视频： */}
-            <View style={{flexDirection: 'row', marginBottom: 10}}>
-              <Text style={styles.bigText}>视频：</Text>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => {
-                  takeVideo();
-                }}
-                style={styles.upLoadStyle}
-              >
-                <Ionicons name={'videocam-outline'} size={50} color={'#aaa'} />
-              </TouchableOpacity>
-            </View>
-            <View>
-              {videoUri && (
-                <Video
-                  source={{uri: videoUri}}
-                  style={{width: 150, height: 100}}
-                  controls={true} // 显示播放控制条
-                  resizeMode='contain'
-                />
+              {/* 照片列表 */}
+              {imgList.length > 0 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false} // 隐藏横向滚动条，可选
+                  contentContainerStyle={{padding: 10}} // 内容样式，可选
+                >
+                  {imgList.map((uri, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onLongPress={() => {
+                        Alert.alert(
+                          '删除确认',
+                          '确定要删除这张图片吗？',
+                          [
+                            {text: '取消', style: 'cancel'},
+                            {
+                              text: '删除',
+                              style: 'destructive',
+                              onPress: () => removePhoto(index),
+                            },
+                          ],
+                          {cancelable: true},
+                        );
+                      }}
+                      delayLongPress={1000} // 长按 2 秒触发
+                    >
+                      <Image source={{uri}} style={styles.preview} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               )}
-            </View>
 
-            {/* 备注： */}
-            <TextInput
-              value={remark} // ✅ 绑定值
-              onChangeText={setRemark} // ✅ 更新值
-              mode='outlined'
-              label='备注：'
-              multiline
-              style={styles.fixedHeight}
-            />
+              {/* 视频： */}
+              <View style={{flexDirection: 'row', marginBottom: 10}}>
+                <Text style={styles.bigText}>视频：</Text>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    takeVideo();
+                  }}
+                  style={styles.upLoadStyle}
+                >
+                  <Ionicons name={'videocam-outline'} size={50} color={'#aaa'} />
+                </TouchableOpacity>
+              </View>
+              <View>
+                {videoUri && (
+                  <Video
+                    source={{uri: videoUri}}
+                    style={{width: 150, height: 100}}
+                    controls={true} // 显示播放控制条
+                    resizeMode='contain'
+                  />
+                )}
+              </View>
+
+              {/* 备注： */}
+              <TextInput
+                value={remark} // ✅ 绑定值
+                onChangeText={setRemark} // ✅ 更新值
+                mode='outlined'
+                label='备注：'
+                multiline
+                style={styles.fixedHeight}
+              />
+            </View>
           </View>
-        </View>
+        )}
       </ScrollView>
 
-      <TouchableOpacity onPress={handleSubmit}>
-        <View style={styles.submitBtn}>{loading ? <ActivityIndicator color='#fff' /> : <Text style={styles.submitBtnText}>确认打卡</Text>}</View>
-      </TouchableOpacity>
+      {pageType === 1 && (
+        <TouchableOpacity onPress={handleSubmit}>
+          <View style={styles.submitBtn}>{loading ? <ActivityIndicator color='#fff' /> : <Text style={styles.submitBtnText}>确认打卡</Text>}</View>
+        </TouchableOpacity>
+      )}
+
       <LoadingOverlay visible={activityLoading} title={title} />
     </View>
   );

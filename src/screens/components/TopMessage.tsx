@@ -8,8 +8,9 @@ import {Divider} from 'react-native-paper';
 
 type Props = {
   id: string;
+  type: number;
 };
-export const TopMessage: React.FC<Props> = ({id}) => {
+export const TopMessage: React.FC<Props> = ({id, type}) => {
   const [details, setDetails] = useState<DetailsParam>();
 
   const patrolPointDetails = async () => {
@@ -43,9 +44,12 @@ export const TopMessage: React.FC<Props> = ({id}) => {
     <View style={{backgroundColor: '#fff', margin: 8, padding: 8, borderRadius: 6}}>
       <View style={styles.cardRow}>
         <Text style={{fontSize: 22}}>{details?.name}</Text>
-        <View>
-          <Tag type={patrolStatus ? 'success' : 'error'}>{patrolStatus ? '巡逻任务已完成' : '巡逻任务待完成'}</Tag>
-        </View>
+
+        {type === 1 && (
+          <View>
+            <Tag type={patrolStatus ? 'success' : 'error'}>{patrolStatus ? '巡逻任务已完成' : '巡逻任务待完成'}</Tag>
+          </View>
+        )}
       </View>
       <Divider />
       <View style={styles.cardRow}>

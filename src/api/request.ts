@@ -39,9 +39,8 @@ class RequestHttp {
           if ([-1].includes(jsonResult.code) || [402].includes(jsonResult.code)) {
             //清除登录信息
             //跳转登录页
-            Alert.alert(jsonResult.message);
-            await AsyncStorage.removeItem('token');
-            await AsyncStorage.removeItem('tokenName');
+            Alert.alert('token失效', jsonResult.message);
+            await AsyncStorage.removeItem('tokenInfo');
             await AsyncStorage.removeItem('myproject');
           }
 

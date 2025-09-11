@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Dimensions, ScrollView, StyleSheet} from 'react-native';
-import {Button, Portal, Dialog} from 'react-native-paper';
+import {Button, Portal, Dialog, Text} from 'react-native-paper';
 
 type Props = {
   title?: string;
@@ -18,8 +18,12 @@ export const DialogWithCustom: React.FC<Props> = ({title = '保安信息', visib
         <ScrollView contentContainerStyle={styles.biggerPadding}>{children}</ScrollView>
       </Dialog.ScrollArea>
       <Dialog.Actions>
-        <Button onPress={close}>取消</Button>
-        <Button onPress={confirm}>确认</Button>
+        <Button style={{width: 100, borderColor: '#2080F0'}} mode='outlined' onPress={close}>
+          <Text style={{fontSize: 16, color: '#000'}}>取消</Text>
+        </Button>
+        <Button style={{width: 100, backgroundColor: '#2080F0'}} mode='contained' onPress={confirm}>
+          <Text style={{fontSize: 16, color: '#fff'}}>确认</Text>
+        </Button>
       </Dialog.Actions>
     </Dialog>
   </Portal>
