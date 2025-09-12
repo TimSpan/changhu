@@ -1,4 +1,4 @@
-import {NativeModules, PermissionsAndroid, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {NativeModules, PermissionsAndroid, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {AntDesign} from '@react-native-vector-icons/ant-design';
 import {Divider} from 'react-native-paper';
 import {RootStackParamList} from '@/navigation/types';
@@ -41,7 +41,7 @@ export const Center = ({navigation}: Props) => {
     })();
   }, []);
   return (
-    <View>
+    <ScrollView style={{flex: 1}}>
       <View style={{padding: 16}}>
         <Text
           style={{
@@ -61,8 +61,8 @@ export const Center = ({navigation}: Props) => {
               navigation.navigate('Patrol');
             }}
           >
-            <AntDesign name='safety-certificate' size={26} color='#2080F0' />
-            <Text style={{fontSize: 16}}>巡逻</Text>
+            <AntDesign name='safety-certificate' size={28} color='#2080F0' />
+            <Text style={styles.bigText}>巡逻</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -72,8 +72,8 @@ export const Center = ({navigation}: Props) => {
               navigation.navigate('Report');
             }}
           >
-            <AntDesign name='alert' size={26} color='#2080F0' />
-            <Text style={{fontSize: 16}}>事件上报</Text>
+            <AntDesign name='alert' size={28} color='#2080F0' />
+            <Text style={styles.bigText}>事件上报</Text>
           </TouchableOpacity>
           <View style={{alignItems: 'center', flex: 1}}></View>
         </View>
@@ -91,56 +91,36 @@ export const Center = ({navigation}: Props) => {
         </Text>
         <Divider style={{marginTop: 10, marginBottom: 20}} />
         <View style={{flexDirection: 'row'}}>
-          {/* <View style={{alignItems: 'center', flex: 1}}>
-            <AntDesign name={'ordered-list'} size={26} color={'#2080F0'} />
-            <Text style={{fontSize: 16}}>排班</Text>
-          </View> */}
+          <TouchableOpacity
+            style={{alignItems: 'center', flex: 1}}
+            activeOpacity={0.7}
+            onPress={() => {
+              // navigation.navigate('BloodPressure');
+              navigation.navigate('FaceRecognitionPunch');
+            }}
+          >
+            <AntDesign name={'thunderbolt'} size={28} color={'#2080F0'} />
+            <Text style={styles.bigText}>采集血压</Text>
+          </TouchableOpacity>
 
-          <TouchableOpacity
-            style={{alignItems: 'center', flex: 1}}
-            activeOpacity={0.7}
-            onPress={() => {
-              navigation.navigate('BloodPressure');
-            }}
-          >
-            <AntDesign name={'thunderbolt'} size={26} color={'#2080F0'} />
-            <Text style={{fontSize: 16}}>采集血压</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{alignItems: 'center', flex: 1}}
-            activeOpacity={0.7}
-            onPress={() => {
-              navigation.navigate('Test');
-            }}
-          >
-            <AntDesign name={'thunderbolt'} size={26} color={'#2080F0'} />
-            <Text style={{fontSize: 16}}>测试</Text>
-          </TouchableOpacity>
-          <View style={{alignItems: 'center', flex: 1}}>
-            {/* <AntDesign name={'solution'} size={26} color={'#2080F0'} />
-            <Text style={{fontSize: 16}}>岗位管理</Text> */}
-          </View>
+          <View style={{alignItems: 'center', flex: 1}}></View>
+          <View style={{alignItems: 'center', flex: 1}}></View>
         </View>
 
         <View style={{flexDirection: 'row', marginTop: 24}}>
-          {/* <View style={{alignItems: 'center', flex: 1}}>
-            <AntDesign name={'unordered-list'} size={26} color={'#2080F0'} />
-            <Text style={{fontSize: 16}}>班次管理</Text>
-          </View> */}
-
-          <View style={{alignItems: 'center', flex: 1}}>
-            {/* <AntDesign name={'video-camera'} size={26} color={'#2080F0'} />
-            <Text style={{fontSize: 16}}>巡逻管理</Text> */}
-          </View>
-
+          <View style={{alignItems: 'center', flex: 1}}></View>
           <View style={{alignItems: 'center', flex: 1}}></View>
           <View style={{alignItems: 'center', flex: 1}}></View>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: '#ccc'},
+
+  bigText: {
+    fontSize: 22,
+  },
 });

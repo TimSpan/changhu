@@ -1,16 +1,17 @@
-import {ActivityIndicator, Alert, Dimensions, Image, NativeModules, PermissionsAndroid, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Dimensions, Image, NativeModules, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {TopMessage} from '../components/TopMessage';
 import {useEffect, useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '@/navigation/types';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import Video from 'react-native-video';
-import {TextInput} from 'react-native-paper';
 import {takeMediaUpload} from '@/components/TakeMedia';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import {api} from '@/api/request';
 import {useProject} from '@/stores/userProject';
 import {StackActions} from '@react-navigation/native';
+import CustomInput from '@/components/CustomInput';
+import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
 
 const {width} = Dimensions.get('window');
 type Props = NativeStackScreenProps<RootStackParamList, 'PatrolDetails'>;
@@ -50,7 +51,7 @@ export const PatrolDetails = ({route, navigation}: Props) => {
   async function handleSubmit() {
     console.log('经纬度  center', center);
     if (!center) {
-      Alert.alert('未能获取到当前位置');
+      ConfirmAlert.alert('提示', '未能获取到当前位置', [{text: '确定', onPress: () => {}}]);
       return;
     }
 
@@ -62,13 +63,14 @@ export const PatrolDetails = ({route, navigation}: Props) => {
       video: videoKey,
       remark: remark,
     };
-    console.log('🍎 ~ handleSubmit ~ patrolPointSignParams:', patrolPointSignParams);
+    console.log('🍎 ~ handleSubmit ~ patrolPointSignParams:提交参数', patrolPointSignParams);
 
     try {
       setLoading(true);
       const res = await api.post('/wechat/patrolPoint/sign', patrolPointSignParams);
       console.log('🍎 ~提交 handleSubmit ~ res:', res);
-      Alert.alert('提示', res.message, [
+
+      ConfirmAlert.alert('提示', res.message, [
         {
           text: '确定',
           onPress: () => {
@@ -78,8 +80,7 @@ export const PatrolDetails = ({route, navigation}: Props) => {
       ]);
     } catch (error) {
       // @ts-ignore
-      Alert.alert('提示', error?.message);
-      console.log('🍎 ~ handleSubmit ~ error:', error);
+      ConfirmAlert.alert('提示', error?.message, [{text: '确定', onPress: () => {}}]);
     } finally {
       setLoading(false);
     }
@@ -97,9 +98,9 @@ export const PatrolDetails = ({route, navigation}: Props) => {
       setVideoKey(res.objectKey);
     } catch (error) {
       if (error instanceof Error) {
-        Alert.alert('提示', error.message);
+        ConfirmAlert.alert('提示', error.message, [{text: '确定', onPress: () => {}}]);
       } else {
-        Alert.alert('提示', String(error));
+        ConfirmAlert.alert('提示', String(error), [{text: '确定', onPress: () => {}}]);
       }
     } finally {
       setActivityLoading(false);
@@ -115,9 +116,9 @@ export const PatrolDetails = ({route, navigation}: Props) => {
       setImgKeyList(prev => [...prev, res.objectKey]);
     } catch (error) {
       if (error instanceof Error) {
-        Alert.alert('提示', error.message);
+        ConfirmAlert.alert('提示', error.message, [{text: '确定', onPress: () => {}}]);
       } else {
-        Alert.alert('提示', String(error));
+        ConfirmAlert.alert('提示', String(error), [{text: '确定', onPress: () => {}}]);
       }
     } finally {
       setActivityLoading(false);
@@ -158,19 +159,10 @@ export const PatrolDetails = ({route, navigation}: Props) => {
                     <TouchableOpacity
                       key={index}
                       onLongPress={() => {
-                        Alert.alert(
-                          '删除确认',
-                          '确定要删除这张图片吗？',
-                          [
-                            {text: '取消', style: 'cancel'},
-                            {
-                              text: '删除',
-                              style: 'destructive',
-                              onPress: () => removePhoto(index),
-                            },
-                          ],
-                          {cancelable: true},
-                        );
+                        ConfirmAlert.alert('删除确认', '确定要删除这张图片吗？?', [
+                          {text: '取消', style: 'cancel', onPress: () => {}},
+                          {text: '确定', onPress: () => removePhoto(index)},
+                        ]);
                       }}
                       delayLongPress={1000} // 长按 2 秒触发
                     >
@@ -204,15 +196,10 @@ export const PatrolDetails = ({route, navigation}: Props) => {
                 )}
               </View>
 
-              {/* 备注： */}
-              <TextInput
-                value={remark} // ✅ 绑定值
-                onChangeText={setRemark} // ✅ 更新值
-                mode='outlined'
-                label='备注：'
-                multiline
-                style={styles.fixedHeight}
-              />
+              <View>
+                <Text style={styles.bigText}>备注：</Text>
+                <CustomInput height={80} value={remark} onChangeText={setRemark} placeholder='请输入备注' />
+              </View>
             </View>
           </View>
         )}
@@ -258,9 +245,9 @@ const styles = StyleSheet.create({
     height: 100,
     width: 100,
     backgroundColor: '#fafafa',
-    borderWidth: 1, // 边框宽度
-    borderColor: '#aaa', // 边框颜色
-    borderStyle: 'dashed', // 边框样式：'solid' | 'dashed' | 'dotted'
+    borderWidth: 1,
+    borderColor: '#aaa',
+    borderStyle: 'dashed',
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',

@@ -42,22 +42,19 @@ export const TopMessage: React.FC<Props> = ({id, type}) => {
   }, [details]);
   return (
     <View style={{backgroundColor: '#fff', margin: 8, padding: 8, borderRadius: 6}}>
-      <View style={styles.cardRow}>
+      <View style={{}}>
         <Text style={{fontSize: 22}}>{details?.name}</Text>
 
-        {type === 1 && (
-          <View>
-            <Tag type={patrolStatus ? 'success' : 'error'}>{patrolStatus ? '巡逻任务已完成' : '巡逻任务待完成'}</Tag>
-          </View>
-        )}
+        {type === 1 && <Tag type={patrolStatus ? 'success' : 'error'}>{patrolStatus ? '巡逻任务已完成' : '巡逻任务待完成'}</Tag>}
       </View>
-      <Divider />
+      <Divider bold={true} />
       <View style={styles.cardRow}>
         <View>
           <Text style={styles.label}>
             巡逻要求：每
             <Text style={styles.highlight}>
-              {details?.intervalValue}个{details?.intervalUnit?.label}
+              {details?.intervalValue}
+              {details?.intervalUnit?.label}
             </Text>
             需要巡逻
             <Text style={styles.highlight}>{details?.requiredCount}</Text>次
@@ -117,12 +114,16 @@ const styles = StyleSheet.create({
   },
   highlight: {
     color: 'red',
-    fontSize: 22,
+    fontSize: 18,
+    // paddingLeft: 10,
+    // paddingRight: 10,
   },
   tag: {
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
+    alignSelf: 'flex-start', // 让子元素根据内容宽度自适应
+    marginBottom: 4,
   },
   tagText: {
     fontSize: 18,

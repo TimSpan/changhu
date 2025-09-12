@@ -3,7 +3,6 @@
 import {User} from '@/screens/Pages/FaceRecognitionPunch/type';
 
 export type RootStackParamList = {
-  Test: undefined;
   Login: undefined;
   Splash: undefined;
   MainTabs: undefined;

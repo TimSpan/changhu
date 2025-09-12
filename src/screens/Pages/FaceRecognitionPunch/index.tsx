@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {StyleSheet, Text, View, useWindowDimensions, Platform, Alert, TouchableOpacity} from 'react-native';
+import {StyleSheet, Text, View, useWindowDimensions, Platform, TouchableOpacity} from 'react-native';
 import {CameraPosition, DrawableFrame, Frame, PhotoFile, Camera as VisionCamera, useCameraDevice, useCameraPermission} from 'react-native-vision-camera';
 import {useFocusEffect, useIsFocused} from '@react-navigation/core';
 import {useAppState} from '@react-native-community/hooks';
@@ -226,7 +226,8 @@ export function FaceRecognitionPunch({navigation}: any) {
         } catch (error) {
           console.log('❌ ~ takePicture ~ error:', error);
           // @ts-ignore
-          Alert.alert('提示', error.message, [
+
+          ConfirmAlert.alert('提示', error.message, [
             {
               text: '确定',
               onPress: () => {

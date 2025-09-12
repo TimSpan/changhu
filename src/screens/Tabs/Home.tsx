@@ -1,7 +1,5 @@
-// import Geolocation from '@react-native-community/geolocation';
-// import Geolocation from 'react-native-geolocation-service';
 import {useEffect, useRef, useState} from 'react';
-import {ActivityIndicator, Alert, PermissionsAndroid, Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, PermissionsAndroid, Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import dayjs from 'dayjs';
 import WebView from 'react-native-webview';
@@ -63,9 +61,6 @@ export const Home = () => {
       <StatusBar backgroundColor='#ccc' />
       <View style={styles.container}>
         <View style={styles.top}>
-          {/* <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-            <ActivityIndicator size={'large'} color='#007bff'></ActivityIndicator>{' '}
-          </View> */}
           {center ? (
             <WebView
               ref={webRef}

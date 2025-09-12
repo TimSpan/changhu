@@ -1,20 +1,18 @@
 import {api} from '@/api/request';
 import {useEffect, useState} from 'react';
-import {launchCamera} from 'react-native-image-picker';
 import {Ionicons} from '@react-native-vector-icons/ionicons';
 import Video from 'react-native-video';
 import {useProject} from '@/stores/userProject';
-import {ActivityIndicator, Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {TextInput} from 'react-native-paper';
+import {ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import EventTypeBottomSheet from '@/components/EventTypeBottomSheet';
-import {generateFileName, getPreSignedUrl, getPreSignedUrlFromKey} from '@/utils/upload';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import {takeMediaUpload} from '@/components/TakeMedia';
+import CustomInput from '@/components/CustomInput';
+import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
 const {width} = Dimensions.get('window');
 export const ReportScreen = () => {
   const {myProject} = useProject();
   const [remark, setRemark] = useState('');
-
   const [title, setTitle] = useState<string>('照片上传中...');
   const [activityLoading, setActivityLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -44,9 +42,9 @@ export const ReportScreen = () => {
       setObjectKey(prev => [...prev, res.objectKey]);
     } catch (error) {
       if (error instanceof Error) {
-        Alert.alert('提示', error.message);
+        ConfirmAlert.alert('提示', error.message, [{text: '确定', onPress: () => {}}]);
       } else {
-        Alert.alert('提示', String(error));
+        ConfirmAlert.alert('提示', String(error), [{text: '确定', onPress: () => {}}]);
       }
     } finally {
       setActivityLoading(false);
@@ -65,9 +63,9 @@ export const ReportScreen = () => {
       setVideoObjectKey(res.objectKey);
     } catch (error) {
       if (error instanceof Error) {
-        Alert.alert('提示', error.message);
+        ConfirmAlert.alert('提示', error.message, [{text: '确定', onPress: () => {}}]);
       } else {
-        Alert.alert('提示', String(error));
+        ConfirmAlert.alert('提示', String(error), [{text: '确定', onPress: () => {}}]);
       }
     } finally {
       setActivityLoading(false);
@@ -84,24 +82,13 @@ export const ReportScreen = () => {
   }
   const submit = function () {
     console.log('useProject().myProject;', myProject);
-    setLoading(true);
     const myProject_ = myProject as MyProject;
     if (!selectedType) {
-      Alert.alert('提示', '请选择事件类型', [
-        {
-          text: '确定',
-          onPress: () => setLoading(false),
-        },
-      ]);
+      ConfirmAlert.alert('提示', '请选择事件类型', [{text: '确定', onPress: () => {}}]);
       return;
     }
     if (!remark.trim()) {
-      Alert.alert('提示', '请输入备注', [
-        {
-          text: '确定',
-          onPress: () => setLoading(false),
-        },
-      ]);
+      ConfirmAlert.alert('提示', '请输入备注', [{text: '确定', onPress: () => {}}]);
       return;
     }
     const params: SubmitData = {
@@ -118,20 +105,21 @@ export const ReportScreen = () => {
 
     console.log('params', params);
 
+    setLoading(true);
     api
       .post('/wechat/signPunch/eventReporting', {...params})
       .then(res => {
-        if (res.code === 200) {
-          Alert.alert('事件上报成功');
-          clear();
-          setLoading(false);
-        } else {
-          Alert.alert(res?.message);
-          setLoading(false);
-        }
+        ConfirmAlert.alert('提示', res.message, [
+          {
+            text: '确定',
+            onPress: () => {
+              clear();
+            },
+          },
+        ]);
       })
       .catch(error => {
-        Alert.alert(error.message);
+        ConfirmAlert.alert('提示', error.message, [{text: '确定', onPress: () => {}}]);
       })
       .finally(() => {
         setLoading(false);
@@ -156,7 +144,6 @@ export const ReportScreen = () => {
         </TouchableOpacity>
 
         <View style={styles.center}>
-          {/* 上传照片： */}
           <View style={{flexDirection: 'row', marginBottom: 10}}>
             <Text style={styles.bigText}>上传照片：</Text>
 
@@ -171,7 +158,6 @@ export const ReportScreen = () => {
             </TouchableOpacity>
           </View>
 
-          {/* 照片列表 */}
           {imgList.length > 0 && (
             <ScrollView
               horizontal
@@ -182,21 +168,12 @@ export const ReportScreen = () => {
                 <TouchableOpacity
                   key={index}
                   onLongPress={() => {
-                    Alert.alert(
-                      '删除确认',
-                      '确定要删除这张图片吗？',
-                      [
-                        {text: '取消', style: 'cancel'},
-                        {
-                          text: '删除',
-                          style: 'destructive',
-                          onPress: () => removePhoto(index),
-                        },
-                      ],
-                      {cancelable: true},
-                    );
+                    ConfirmAlert.alert('提示', '确定要删除这张图片吗？', [
+                      {text: '取消', style: 'cancel', onPress: () => {}},
+                      {text: '确定', onPress: () => removePhoto(index)},
+                    ]);
                   }}
-                  delayLongPress={1000} // 长按 2 秒触发
+                  delayLongPress={1000}
                 >
                   <Image source={{uri}} style={styles.preview} />
                 </TouchableOpacity>
@@ -204,7 +181,6 @@ export const ReportScreen = () => {
             </ScrollView>
           )}
 
-          {/* 视频： */}
           <View style={{flexDirection: 'row', marginBottom: 10}}>
             <Text style={styles.bigText}>视频：</Text>
             <TouchableOpacity
@@ -217,26 +193,22 @@ export const ReportScreen = () => {
               <Ionicons name={'videocam-outline'} size={50} color={'#aaa'} />
             </TouchableOpacity>
           </View>
-          <View>
-            {videoUri && (
+
+          {videoUri && (
+            <View>
               <Video
                 source={{uri: videoUri}}
                 style={{width: 150, height: 100}}
                 controls={true} // 显示播放控制条
                 resizeMode='contain'
               />
-            )}
-          </View>
+            </View>
+          )}
 
-          {/* 备注： */}
-          <TextInput
-            value={remark} // ✅ 绑定值
-            onChangeText={setRemark} // ✅ 更新值
-            mode='outlined'
-            label='备注：'
-            multiline
-            style={styles.fixedHeight}
-          />
+          <View>
+            <Text style={styles.bigText}>备注：</Text>
+            <CustomInput height={80} value={remark} onChangeText={setRemark} placeholder='请输入备注' />
+          </View>
         </View>
 
         {eventTypeList && (
@@ -290,9 +262,9 @@ const styles = StyleSheet.create({
     height: 100,
     width: 100,
     backgroundColor: '#fafafa',
-    borderWidth: 1, // 边框宽度
-    borderColor: '#aaa', // 边框颜色
-    borderStyle: 'dashed', // 边框样式：'solid' | 'dashed' | 'dotted'
+    borderWidth: 1,
+    borderColor: '#aaa',
+    borderStyle: 'dashed',
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',

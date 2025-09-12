@@ -1,16 +1,15 @@
 import {useSkipBack} from '@/hooks/useSkipBack';
 import {Buffer} from 'buffer';
 import RNFS from 'react-native-fs';
-import {launchCamera, MediaType} from 'react-native-image-picker';
+import {launchCamera} from 'react-native-image-picker';
 import RNPhotoManipulator from 'react-native-photo-manipulator';
-import {Text, View, TextInput, Button, Alert, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Image, Modal, PixelRatio} from 'react-native';
-import {TextInput as TextInputPaper, Button as NButton} from 'react-native-paper';
+import {Text, View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Image, Modal, PixelRatio, Platform, StatusBar} from 'react-native';
+import {Button as NButton} from 'react-native-paper';
 import {useForm, Controller} from 'react-hook-form';
 import {useRef, useState} from 'react';
 import {useProject} from '@/stores/userProject';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import LoadingOverlay from '@/components/LoadingOverlay';
-import {takeMediaUpload} from '@/components/TakeMedia';
 import {ImageLibraryOptions, launchImageLibrary} from 'react-native-image-picker';
 import DialogWithRadioBtns from '@/components/DialogWithRadioBtns';
 import {SketchCanvas} from '@sourcetoad/react-native-sketch-canvas';
@@ -20,8 +19,13 @@ import {StackActions} from '@react-navigation/native';
 import type {RootStackParamList} from '@/navigation/types';
 import {getPreSignedUrl, getPreSignedUrlFromKey} from '@/utils/upload';
 import {api} from '@/api/request';
+import Svg, {Line} from 'react-native-svg';
+import CustomInput from '@/components/CustomInput';
+import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
 type Props = NativeStackScreenProps<RootStackParamList, 'BloodForm'>;
-const {width} = Dimensions.get('window');
+const {width, height} = Dimensions.get('window');
+const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
+const customHeight = height - 132 - statusBarHeight;
 export function BloodFormScreen({route, navigation}: Props) {
   console.log('route.params', route.params);
   useSkipBack<RootStackParamList>(2, 'BloodForm');
@@ -51,7 +55,7 @@ export function BloodFormScreen({route, navigation}: Props) {
   const [signObjectKey, setSignObjectKey] = useState<string | null>(null);
   const onSubmit = (data: any) => {
     if (!signObjectKey) {
-      Alert.alert('请签名');
+      ConfirmAlert.alert('提示', '请签名', [{text: '确定', onPress: () => {}}]);
       return;
     }
     const params = {
@@ -88,20 +92,14 @@ export function BloodFormScreen({route, navigation}: Props) {
       })
       .then(res => {
         console.log('🍎 ~ onSubmit ~ res:', res);
-
-        Alert.alert('提示', res.message, [
-          {
-            text: '确定',
-            style: 'destructive',
-            onPress: () => {
-              navigation.dispatch(StackActions.pop(2));
-            },
-          },
+        ConfirmAlert.alert('提示', res.message, [
+          {text: '取消', style: 'cancel', onPress: () => {}},
+          {text: '确定', onPress: () => navigation.dispatch(StackActions.pop(2))},
         ]);
       })
       .catch(error => {
         console.log('🍎 ~ onSubmit ~ error:', error);
-        Alert.alert('错误', error.message);
+        ConfirmAlert.alert('提示', error.message, [{text: '确定', onPress: () => {}}]);
       })
       .finally(() => {
         setActivityLoading(false);
@@ -118,9 +116,9 @@ export function BloodFormScreen({route, navigation}: Props) {
       });
     } catch (error) {
       if (error instanceof Error) {
-        Alert.alert('提示', error.message);
+        ConfirmAlert.alert('提示', error.message, [{text: '确定', onPress: () => {}}]);
       } else {
-        Alert.alert('提示', String(error));
+        ConfirmAlert.alert('提示', String(error), [{text: '确定', onPress: () => {}}]);
       }
     } finally {
     }
@@ -144,9 +142,9 @@ export function BloodFormScreen({route, navigation}: Props) {
       });
     } catch (error) {
       if (error instanceof Error) {
-        Alert.alert('提示', error.message);
+        ConfirmAlert.alert('提示', error.message, [{text: '确定', onPress: () => {}}]);
       } else {
-        Alert.alert('提示', String(error));
+        ConfirmAlert.alert('提示', String(error), [{text: '确定', onPress: () => {}}]);
       }
     } finally {
     }
@@ -177,9 +175,9 @@ export function BloodFormScreen({route, navigation}: Props) {
 
   const mergeImages = async (backgroundUri: string, signatures: string[]) => {
     let result = backgroundUri;
+    const spaceWidth = IMAGE_WIDTH / 4;
     for (let i = 0; i < signatures.length; i++) {
-      result = await RNPhotoManipulator.overlayImage(result, signatures[i], {x: IMAGE_WIDTH * i, y: 0});
-      // console.log(`拼接图路径: ${result}`);
+      result = await RNPhotoManipulator.overlayImage(result, signatures[i], {x: i === 0 ? IMAGE_WIDTH * i : IMAGE_WIDTH * i - spaceWidth * i, y: 0});
     }
     return result;
   };
@@ -208,14 +206,15 @@ export function BloodFormScreen({route, navigation}: Props) {
 
   const signSubmit = async () => {
     if (signatures.length === 0) {
-      Alert.alert('请签名');
+      ConfirmAlert.alert('提示', '请签名', [{text: '确定', onPress: () => {}}]);
       return;
     }
     setModalVisible(false);
     try {
       setActivityLoading(true);
       setTitle('签名上传中...');
-      const totalWidth = IMAGE_WIDTH * signatures.length;
+      const spaceWidth = IMAGE_WIDTH / 4;
+      const totalWidth = IMAGE_WIDTH * signatures.length - spaceWidth * signatures.length - 1;
       const maxHeight = IMAGE_HEIGHT;
       const surface = Skia.Surface.MakeOffscreen(totalWidth, maxHeight)!;
       const canvas = surface.getCanvas();
@@ -264,7 +263,7 @@ export function BloodFormScreen({route, navigation}: Props) {
           render={({field: {onChange, onBlur, value}}) => (
             <View style={{flexDirection: 'row', marginBottom: 10}}>
               <Text style={styles.requiredStyle}>*</Text>
-              <Text style={styles.bigText}>上传照片</Text>
+              <Text style={[styles.bigText, {marginRight: 10}]}>人脸</Text>
 
               <TouchableOpacity
                 activeOpacity={0.7}
@@ -279,22 +278,16 @@ export function BloodFormScreen({route, navigation}: Props) {
               {face && (
                 <TouchableOpacity
                   onLongPress={() => {
-                    Alert.alert(
-                      '删除确认',
-                      '确定要删除这张图片吗？',
-                      [
-                        {text: '取消', style: 'cancel'},
-                        {
-                          text: '删除',
-                          style: 'destructive',
-                          onPress: () => {
-                            onChange('');
-                            setFace('');
-                          },
+                    ConfirmAlert.alert('删除确认', '确定要删除这张图片吗？', [
+                      {text: '取消', style: 'cancel', onPress: () => {}},
+                      {
+                        text: '确定',
+                        onPress: () => {
+                          onChange('');
+                          setFace('');
                         },
-                      ],
-                      {cancelable: true},
-                    );
+                      },
+                    ]);
                   }}
                   delayLongPress={1000}
                 >
@@ -312,14 +305,17 @@ export function BloodFormScreen({route, navigation}: Props) {
             required: true,
           }}
           render={({field: {onChange, onBlur, value}}) => (
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <View style={styles.list}>
               <Text style={styles.requiredStyle}>*</Text>
-              <TextInputPaper keyboardType='numeric' mode='outlined' style={styles.inputContainerStyle} dense label='血压高' placeholder='请输入血压高' value={value} onChangeText={onChange} />
+              <Text style={styles.bigText}>血压最高值：</Text>
+              <View>
+                <CustomInput style={{width: 180}} height={30} keyboardType='numeric' value={value} onChangeText={onChange} placeholder='请输入血压最高值' />
+              </View>
             </View>
           )}
           name='high'
         />
-        {errors.high && <Text style={styles.errorText}>请输入血压高</Text>}
+        {errors.high && <Text style={styles.errorText}>请输入血压最高值</Text>}
 
         <Controller
           control={control}
@@ -327,14 +323,17 @@ export function BloodFormScreen({route, navigation}: Props) {
             required: true,
           }}
           render={({field: {onChange, onBlur, value}}) => (
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <View style={styles.list}>
               <Text style={styles.requiredStyle}>*</Text>
-              <TextInputPaper keyboardType='numeric' mode='outlined' style={styles.inputContainerStyle} dense label='血压低' placeholder='请输入血压低' value={value} onChangeText={onChange} />
+              <Text style={styles.bigText}>血压最低值：</Text>
+              <View>
+                <CustomInput style={{width: 180}} height={30} keyboardType='numeric' value={value} onChangeText={onChange} placeholder='请输入血压最低值' />
+              </View>
             </View>
           )}
           name='low'
         />
-        {errors.low && <Text style={styles.errorText}>请输入血压低</Text>}
+        {errors.low && <Text style={styles.errorText}>请输入血压最低值</Text>}
 
         <Controller
           control={control}
@@ -342,9 +341,12 @@ export function BloodFormScreen({route, navigation}: Props) {
             required: true,
           }}
           render={({field: {onChange, onBlur, value}}) => (
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <View style={styles.list}>
               <Text style={styles.requiredStyle}>*</Text>
-              <TextInputPaper keyboardType='numeric' mode='outlined' style={styles.inputContainerStyle} dense label='每分钟心跳' placeholder='请输入每分钟心跳' value={value} onChangeText={onChange} />
+              <Text style={styles.bigText}>每分钟心跳：</Text>
+              <View>
+                <CustomInput style={{width: 180}} height={30} keyboardType='numeric' value={value} onChangeText={onChange} placeholder='请输入每分钟心跳' />
+              </View>
             </View>
           )}
           name='heartbeat'
@@ -369,7 +371,6 @@ export function BloodFormScreen({route, navigation}: Props) {
                   mode='contained'
                   onPress={() => {
                     toSign(onChange);
-                    // navigation.navigate('Test');
                   }}
                 >
                   去签名
@@ -389,9 +390,9 @@ export function BloodFormScreen({route, navigation}: Props) {
             required: false,
           }}
           render={({field: {onChange, onBlur, value}}) => (
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              {/* <Text style={styles.requiredStyle}>*</Text> */}
-              <TextInputPaper mode='outlined' multiline style={styles.fixedHeight} dense label='备注' placeholder='请输入备注' value={value} onChangeText={onChange} />
+            <View>
+              <Text style={styles.bigText}>备注：</Text>
+              <CustomInput height={80} value={value} onChangeText={onChange} placeholder='请输入备注' />
             </View>
           )}
           name='remark'
@@ -444,6 +445,8 @@ export function BloodFormScreen({route, navigation}: Props) {
                 Image.getSize(
                   imageUri,
                   (width, height) => {
+                    console.log('PixelRatio.getPixelSizeForLayoutSize(width)', PixelRatio.getPixelSizeForLayoutSize(width));
+
                     setIMAGE_WIDTH(PixelRatio.getPixelSizeForLayoutSize(width));
                     setIMAGE_HEIGHT(PixelRatio.getPixelSizeForLayoutSize(height));
                   },
@@ -457,7 +460,17 @@ export function BloodFormScreen({route, navigation}: Props) {
               }
             }}
           />
-
+          {/* 米字格 */}
+          <Svg pointerEvents='none' width={width} height={customHeight} style={{position: 'absolute', top: 82, left: 0}}>
+            {/* 中心横线 */}
+            <Line x1='0%' y1='50%' x2='100%' y2='50%' stroke='#ccc' strokeWidth='1' strokeDasharray={[4, 4]} />
+            {/* 中心竖线 */}
+            <Line x1='50%' y1='0%' x2='50%' y2='100%' stroke='#ccc' strokeWidth='1' strokeDasharray={[4, 4]} />
+            {/* 左上到右下斜线 */}
+            <Line x1='0%' y1='0%' x2='100%' y2='100%' stroke='#ccc' strokeWidth='1' strokeDasharray={[4, 4]} />
+            {/* 右上到左下斜线 */}
+            <Line x1='100%' y1='0%' x2='0%' y2='100%' stroke='#ccc' strokeWidth='1' strokeDasharray={[4, 4]} />
+          </Svg>
           <View style={styles.footer}>
             <TouchableOpacity
               onPress={() => {
@@ -498,6 +511,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#FF0000',
+    fontSize: 18,
   },
 
   submitBtn: {
@@ -508,7 +522,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
+  list: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
   submitBtnText: {
     fontSize: 22,
     fontWeight: '600',
@@ -521,7 +539,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   bigText: {
-    width: 100,
+    // width: 60,
     fontSize: 22,
   },
 

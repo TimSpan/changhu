@@ -33,8 +33,12 @@ const DialogWithRadioBtns = ({data, visible, close, confirm}: Props) => {
           </ScrollView>
         </Dialog.ScrollArea>
         <Dialog.Actions>
-          <Button onPress={close}>取消</Button>
-          <Button onPress={() => confirm(checked)}>确认</Button>
+          <Button style={{width: 100, borderColor: '#2080F0'}} mode='outlined' onPress={close}>
+            <Text style={{fontSize: 16, color: '#000'}}>取消</Text>
+          </Button>
+          <Button style={{width: 100, backgroundColor: '#2080F0'}} mode='contained' onPress={() => confirm(checked)}>
+            <Text style={{fontSize: 16, color: '#fff'}}>确认</Text>
+          </Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>

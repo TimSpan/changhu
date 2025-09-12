@@ -1,49 +1,34 @@
-import ConfirmDialog from '@/components/ConfirmDialog';
 import {useAuthStore} from '@/stores/auth';
-import {useState} from 'react';
 import {useProject} from '@/stores/userProject';
-import {Alert, Image, ImageBackground, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {ImageBackground, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {Button as NButton, Divider} from 'react-native-paper';
+import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
 export const User = ({navigation}: any) => {
-  const {myProject, clearMyProject} = useProject();
+  const {clearMyProject} = useProject();
   const {tokenInfo, clearTokenInfo} = useAuthStore();
   const logOut = () => {
-    try {
-      clearTokenInfo();
-      clearMyProject();
-    } catch (error) {
-      Alert.alert(error as string);
-    }
+    clearTokenInfo();
+    clearMyProject();
   };
-  const [visible, setVisible] = useState(false);
+
   return (
     <ScrollView>
       <View style={styles.container}>
-        <ImageBackground
-          source={require('../../assets/banner.png')} // 本地图片路径
-          style={styles.header}
-        >
+        <ImageBackground source={require('../../assets/banner.png')} style={styles.header}>
           <View style={styles.userInfo}>
-            <Image
-              source={{uri: 'https://i.pravatar.cc/100'}} // 头像
-              style={styles.avatar}
-            />
             <View style={{marginLeft: 12}}>
               <Text style={styles.name}>{tokenInfo?.role === 'SECURITY' ? '保安队员' : '队长 '}</Text>
               <View style={{flexDirection: 'row'}}>
                 <Text style={styles.role}>保安部门</Text>
-                <Text style={[styles.role, {marginLeft: 20}]}>未选择单位</Text>
               </View>
             </View>
           </View>
         </ImageBackground>
 
         <View style={styles.content}>
-          {/* <Text style={{lineHeight: 50}}>修改用户信息</Text>
-          <Divider /> */}
-          <Text style={{lineHeight: 50}}>意见收集</Text>
+          <Text style={{lineHeight: 50, fontSize: 18}}>意见收集</Text>
           <Divider />
-          <Text style={{lineHeight: 50}}>关于App</Text>
+          <Text style={{lineHeight: 50, fontSize: 18}}>关于App</Text>
           <Divider />
           <NButton
             style={{
@@ -54,25 +39,15 @@ export const User = ({navigation}: any) => {
             }}
             mode='contained'
             onPress={() => {
-              setVisible(true);
+              ConfirmAlert.alert('提示', '确定要退出登录么?', [
+                {text: '取消', style: 'cancel', onPress: () => {}},
+                {text: '确定', onPress: () => logOut()},
+              ]);
             }}
           >
-            退出登录
+            <Text style={{fontSize: 20}}>退出登录</Text>
           </NButton>
         </View>
-
-        <ConfirmDialog
-          visible={visible}
-          title='提示'
-          text='确定要退出登录么？'
-          confirm={() => {
-            setVisible(false);
-            logOut();
-          }}
-          close={() => {
-            setVisible(false);
-          }}
-        />
       </View>
     </ScrollView>
   );
@@ -82,7 +57,8 @@ const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: '#f5f5f5'},
   header: {
     height: 150,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+
     padding: 16,
   },
   userInfo: {
@@ -100,7 +76,7 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
   name: {fontSize: 20, fontWeight: '600', color: '#fff'},
-  role: {fontSize: 14, color: '#eee', marginTop: 4},
+  role: {fontSize: 16, color: '#eee', marginTop: 4},
   content: {flex: 1, paddingLeft: 16, paddingRight: 16},
   sectionTitle: {fontSize: 16, fontWeight: '500', marginBottom: 12},
 });

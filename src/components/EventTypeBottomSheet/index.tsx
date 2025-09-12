@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions} from 'react-native';
-import {Checkbox} from 'react-native-paper';
-import Modal from 'react-native-modal';
+import React, {useEffect, useMemo, useState} from 'react';
+import {View, Text, ScrollView, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, Dimensions, Modal as RNModal} from 'react-native';
+import {Fontisto} from '@react-native-vector-icons/fontisto';
+import {AntDesign} from '@react-native-vector-icons/ant-design';
 const {height} = Dimensions.get('window');
 const EventTypeBottomSheet = ({
   title,
@@ -15,50 +15,65 @@ const EventTypeBottomSheet = ({
   visible: boolean;
   onClose: () => void;
   eventTypeList: {label: string; value: string}[];
-  value?: Option | null; // 父组件传入的已选值
-  onChange: (val: Option) => void; // 父组件回调
+  value?: Option | null;
+  onChange: (val: Option) => void;
 }) => {
   const [selected, setSelected] = useState<Option | null>(null);
-  // 如果父组件 value 改了，子组件同步
+
   useEffect(() => {
     setSelected(value ?? null);
   }, [value]);
+
   const handleSelect = (val: Option) => {
     setSelected(val);
-    onChange(val); // 把值传回父组件
+    onChange(val);
   };
+
+  // 小列表（几十条以内）：直接用 useMemo 就够了。
+  // 大列表（几百条以上）：推荐拆成 OptionItem + React.memo，避免每次 selected 改变渲染整个列表。
+  const renderedOptions = useMemo(() => {
+    return eventTypeList.map(option => (
+      <TouchableOpacity key={option.value} style={styles.option} activeOpacity={0.7} onPress={() => handleSelect(option)}>
+        <View style={{width: 50}}>
+          <Fontisto
+            onPress={() => handleSelect(option)}
+            name={selected?.value === option.value ? 'checkbox-active' : 'checkbox-passive'}
+            color={selected?.value === option.value ? '#2080F0' : '#ccc'}
+            size={22}
+          />
+        </View>
+        <Text style={styles.optionText}>{option.label}</Text>
+      </TouchableOpacity>
+    ));
+  }, [eventTypeList, selected]);
   return (
-    <Modal isVisible={visible} onBackdropPress={onClose} onBackButtonPress={onClose} style={styles.modal} swipeDirection='down' onSwipeComplete={onClose}>
+    <RNModal
+      animationType='slide'
+      transparent
+      visible={visible}
+      onRequestClose={onClose} // Android 返回键
+    >
+      {/* 点击遮罩关闭 */}
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.overlay} />
+      </TouchableWithoutFeedback>
+
+      {/* 底部弹出内容 */}
       <View style={styles.sheet}>
         <View style={styles.header}>
-          <Text style={styles.headerText}>{title} </Text>
+          <Text style={styles.headerText}>{title}</Text>
+          <AntDesign onPress={onClose} name={'close'} size={30} color={'#000'}></AntDesign>
         </View>
-        <ScrollView style={styles.scroll}>
-          {eventTypeList &&
-            eventTypeList.map(option => (
-              <TouchableOpacity key={option.value} style={styles.option} activeOpacity={0.7} onPress={() => handleSelect(option)}>
-                <Checkbox
-                  status={selected?.value === option.value ? 'checked' : 'unchecked'}
-                  onPress={() => handleSelect(option)}
-                  color='#2080F0'
-                  uncheckedColor='#ccc'
-                  // 增大 Checkbox 尺寸
-                  // @ts-ignore
-                  style={{transform: [{scale: 1.5}]}}
-                />
-                <Text style={styles.optionText}>{option.label}</Text>
-              </TouchableOpacity>
-            ))}
-        </ScrollView>
+        <ScrollView style={styles.scroll}>{renderedOptions}</ScrollView>
       </View>
-    </Modal>
+    </RNModal>
   );
 };
 
 const styles = StyleSheet.create({
-  modal: {
-    justifyContent: 'flex-end',
-    margin: 0,
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
   sheet: {
     maxHeight: height * 0.7,
@@ -71,9 +86,12 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   headerText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   scroll: {
@@ -86,7 +104,6 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 26,
-    marginLeft: 12,
   },
 });
 

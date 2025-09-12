@@ -1,7 +1,7 @@
-import axios, {AxiosError, type AxiosInstance, type AxiosRequestConfig, type AxiosResponse} from 'axios';
 import {URL} from '@/common';
+import axios, {AxiosError, type AxiosInstance, type AxiosRequestConfig, type AxiosResponse} from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Alert} from 'react-native';
+import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
 const axiosConfig: AxiosRequestConfig = {
   baseURL: URL,
   timeout: 10000,
@@ -39,7 +39,7 @@ class RequestHttp {
           if ([-1].includes(jsonResult.code) || [402].includes(jsonResult.code)) {
             //清除登录信息
             //跳转登录页
-            Alert.alert('token失效', jsonResult.message);
+            ConfirmAlert.alert('token失效', jsonResult.message, [{text: '确定', onPress: () => {}}]);
             await AsyncStorage.removeItem('tokenInfo');
             await AsyncStorage.removeItem('myproject');
           }
@@ -49,17 +49,15 @@ class RequestHttp {
         return Promise.resolve(jsonResult);
       },
       async (error: AxiosError): Promise<string> => {
-        console.log('_________________________ ~ error:', error);
+        console.log('❌ ~ RequestHttp ~ constructor ~ error:', error);
         if (error.code === 'ECONNABORTED') {
-          Alert.alert('网络错误类型：', '请求超时，请检查网络连接');
+          ConfirmAlert.alert('网络错误类型：', '请求超时，请检查网络连接', [{text: '确定', onPress: () => {}}]);
         } else if (error.message.includes('AxiosError: Network Error')) {
-          Alert.alert('网络错误类型：', '网络连接失败，请检查网络环境');
+          ConfirmAlert.alert('网络错误类型：', '网络连接失败，请检查网络环境', [{text: '确定', onPress: () => {}}]);
         } else if (error.response) {
-          console.log(error.response);
-
-          Alert.alert('网络错误类型：', `服务器返回错误：${error.response.status}`);
+          ConfirmAlert.alert('网络错误类型：', `服务器返回错误：${error.response.status}`, [{text: '确定', onPress: () => {}}]);
         } else {
-          Alert.alert('网络错误类型：', '未知错误，请稍后再试');
+          ConfirmAlert.alert('网络错误类型：', '未知错误，请稍后再试', [{text: '确定', onPress: () => {}}]);
         }
         return Promise.reject(error);
       },

@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {useCallback, useRef, useState} from 'react';
-import type {AlertButton} from 'react-native';
-import {Alert, Animated, Dimensions, Easing, Linking, StyleSheet, View} from 'react-native';
+import {Animated, Dimensions, Easing, StyleSheet, View} from 'react-native';
 import type {Code} from 'react-native-vision-camera';
 import {useCameraDevice, useCodeScanner} from 'react-native-vision-camera';
 import {Camera} from 'react-native-vision-camera';
@@ -11,8 +10,9 @@ import {StatusBarBlurBackground} from './StatusBarBlurBackground';
 import {PressableOpacity} from 'react-native-pressable-opacity';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {StackActions, useIsFocused} from '@react-navigation/core';
+import {useFocusEffect, useIsFocused} from '@react-navigation/core';
 import {RootStackParamList} from '@/navigation/types';
+import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
 
 const {width, height} = Dimensions.get('window');
 const SCAN_WIDTH = width * 0.7; // 扫描线长度
@@ -40,37 +40,28 @@ export function CodeScannerPage({navigation}: Props): React.ReactElement {
       ]),
     ).start();
   }, [animatedLine]);
-  // 1. Use a simple default back camera
+  // 1. 使用的默认后置摄像头
   const device = useCameraDevice('back');
 
-  // 2. Only activate Camera when the app is focused and this screen is currently opened
+  // 2. 只有当应用程序聚焦并且当前打开此屏幕时才激活相机
   const isFocused = useIsFocused();
   const isForeground = useIsForeground();
   const isActive = isFocused && isForeground;
 
-  // 3. (Optional) enable a torch setting
+  // 3. （可选）开启火炬设置
   const [torch, setTorch] = useState(false);
 
-  // 4. On code scanned, we show an aler to the user
+  // 4. 在扫描的代码上，我们向用户显示一个标签
   const isShowingAlert = useRef(false);
   const showCodeAlert = (value: string, onDismissed: () => void): void => {
-    const buttons: AlertButton[] = [
+    ConfirmAlert.alert('提示', '点击确定去打卡', [
       {
-        text: 'Close',
-        style: 'cancel',
-        onPress: onDismissed,
-      },
-    ];
-    if (value.startsWith('http')) {
-      buttons.push({
-        text: 'Open URL',
+        text: '确定',
         onPress: () => {
-          Linking.openURL(value);
-          onDismissed();
+          navigation.navigate('PatrolDetails', {id: value, type: 1, isScan: true});
         },
-      });
-    }
-    Alert.alert('Scanned Code', value, buttons);
+      },
+    ]);
   };
   const onCodeScanned = useCallback((codes: Code[]) => {
     console.log(`Scanned ${codes.length} codes:`, codes);
@@ -79,18 +70,43 @@ export function CodeScannerPage({navigation}: Props): React.ReactElement {
     if (isShowingAlert.current) return;
     showCodeAlert(value, () => {
       isShowingAlert.current = false;
-      navigation.navigate('PatrolDetails', {id: value, type: 1, isScan: true});
     });
     isShowingAlert.current = true;
   }, []);
 
-  // 5. Initialize the Code Scanner to scan QR codes and Barcodes
+  // 5. 初始化条码扫描器扫描QR二维码
+  // const codeScanner = useCodeScanner({
+  //   codeTypes: ['qr'],
+  //   onCodeScanned: onCodeScanned,
+  // });
+
+  const processingRef = useRef(true);
+  const stopFrameProcessing = () => {
+    processingRef.current = false;
+  };
+  const startFrameProcessing = () => {
+    processingRef.current = true;
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      startFrameProcessing();
+      return () => {};
+    }, []),
+  );
   const codeScanner = useCodeScanner({
     codeTypes: ['qr'],
-    onCodeScanned: onCodeScanned,
-    // onCodeScanned: codes => {
-    //   console.log(`Scanned ${codes.length} codes!`, codes);
-    // },
+    onCodeScanned: (codes: Code[]) => {
+      if (!processingRef.current) return; // 停止处理
+
+      if (codes) {
+        stopFrameProcessing();
+        console.log('🍎 ~扫描结果 CodeScannerPage ~ codes:', codes);
+        const value = codes[0]?.value;
+        if (value == null) return;
+        navigation.navigate('PatrolDetails', {id: value, type: 1, isScan: true});
+      }
+    },
   });
 
   return (
@@ -111,14 +127,16 @@ export function CodeScannerPage({navigation}: Props): React.ReactElement {
 
       <StatusBarBlurBackground />
 
+      {/* 闪光灯 */}
       <View style={styles.rightButtonRow}>
-        <PressableOpacity style={styles.button} onPress={() => navigation.dispatch(StackActions.pop(1))} disabledOpacity={0.4}>
+        <PressableOpacity style={styles.button} onPress={() => setTorch(!torch)} disabledOpacity={0.4}>
           <Ionicons name={torch ? 'flash' : 'flash-off'} color='white' size={24} />
         </PressableOpacity>
       </View>
 
       {/* Back Button */}
-      <PressableOpacity style={styles.backButton} onPress={navigation.goBack}>
+      {/* onPress={() => navigation.dispatch(StackActions.pop(1))} */}
+      <PressableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name='chevron-back' color='white' size={35} />
       </PressableOpacity>
     </View>

@@ -1,15 +1,12 @@
 import {api} from '@/api/request';
 import {RootStackParamList} from '@/navigation/types';
-import {useAuthStore} from '@/stores/auth';
 import {useProject} from '@/stores/userProject';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useState, useCallback, useEffect} from 'react';
 import {SafeAreaView, StyleSheet, Text, View, FlatList, RefreshControl, TouchableOpacity} from 'react-native';
-import {Camera} from 'react-native-vision-camera';
 import {SecurityMemberType} from './type';
 type Props = NativeStackScreenProps<RootStackParamList>;
 export const PatrolScreen = ({navigation}: Props) => {
-  // const {tokenInfo} = useAuthStore();
   const {myProject} = useProject();
   const [data, setData] = useState<SecurityMemberType[]>();
   const [refreshing, setRefreshing] = useState(false);
@@ -108,9 +105,9 @@ const styles = StyleSheet.create({
 
   fab: {
     position: 'absolute',
-    right: 10,
-    bottom: 50,
-    width: 120,
+    left: 10,
+    bottom: 20,
+    width: 100,
     height: 60,
     borderRadius: 6,
     backgroundColor: '#2080F0',

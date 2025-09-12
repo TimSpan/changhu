@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
-import Toast from 'react-native-toast-message';
-import {StyleSheet, SafeAreaView, View, Text, TouchableOpacity, TextInput, ActivityIndicator, Alert} from 'react-native';
+import {StyleSheet, SafeAreaView, View, Text, TouchableOpacity, TextInput, ActivityIndicator} from 'react-native';
 import {CustomIcon} from '@/components/CustomIcon/index';
 import {encryptStr} from '@/utils';
 import {api} from '@/api/request';
@@ -8,16 +7,15 @@ import {useAuthStore} from '@/stores/auth';
 import {useProject} from '@/stores/userProject';
 import {Toast as UseToast} from '@/components/Toast';
 import {AxiosError} from 'axios';
+import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
 export default function Login() {
   const [toast, setToast] = useState('');
   const {setMyProject} = useProject();
 
   const {setTokenInfo} = useAuthStore();
-  // const setToken = useAuthStore(state => state.setToken);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     tel: '17346625362',
-    // tel: '13575126791',
     password: '123456',
   });
   const [errors, setErrors] = useState({tel: '', password: ''});
@@ -63,16 +61,12 @@ export default function Login() {
       } catch (error) {
         const err = error as AxiosError<JsonResult<any>>;
         console.log('错误提示', error);
-        Alert.alert('提示', err.message);
+        ConfirmAlert.alert('提示', err.message, [{text: '确定', onPress: () => {}}]);
       } finally {
         setLoading(false);
       }
     } else {
-      Toast.show({
-        type: 'error',
-        text1: '提示',
-        text2: '校验失败',
-      });
+      ConfirmAlert.alert('提示', '校验失败', [{text: '确定', onPress: () => {}}]);
     }
   };
   return (
