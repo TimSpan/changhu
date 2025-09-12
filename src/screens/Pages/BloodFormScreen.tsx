@@ -9,7 +9,6 @@ import {useForm, Controller} from 'react-hook-form';
 import {useRef, useState} from 'react';
 import {useProject} from '@/stores/userProject';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import LoadingOverlay from '@/components/LoadingOverlay';
 import {ImageLibraryOptions, launchImageLibrary} from 'react-native-image-picker';
 import DialogWithRadioBtns from '@/components/DialogWithRadioBtns';
 import {SketchCanvas} from '@sourcetoad/react-native-sketch-canvas';
@@ -22,6 +21,7 @@ import {api} from '@/api/request';
 import Svg, {Line} from 'react-native-svg';
 import CustomInput from '@/components/CustomInput';
 import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
+import {LoadingModal} from '@/components/LoadingModal';
 type Props = NativeStackScreenProps<RootStackParamList, 'BloodForm'>;
 const {width, height} = Dimensions.get('window');
 const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
@@ -398,7 +398,6 @@ export function BloodFormScreen({route, navigation}: Props) {
           name='remark'
         />
         {errors.remark && <Text style={styles.errorText}>请输入备注</Text>}
-        <LoadingOverlay visible={activityLoading} title={title} />
       </ScrollView>
       <TouchableOpacity onPress={handleSubmit(onSubmit)}>
         <View style={styles.submitBtn}>{loading ? <ActivityIndicator color='#fff' /> : <Text style={styles.submitBtnText}>确认</Text>}</View>
@@ -424,7 +423,7 @@ export function BloodFormScreen({route, navigation}: Props) {
           setVisible(false);
         }}
       ></DialogWithRadioBtns>
-
+      <LoadingModal visible={activityLoading} title={title} />
       <Modal visible={modalVisible} animationType='slide'>
         <View style={styles.modal}>
           <View style={{flexDirection: 'row', height: 82, backgroundColor: '#ccc'}}>
