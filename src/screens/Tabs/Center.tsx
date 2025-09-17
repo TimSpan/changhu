@@ -102,8 +102,17 @@ export const Center = ({navigation}: Props) => {
             <AntDesign name={'thunderbolt'} size={28} color={'#2080F0'} />
             <Text style={styles.bigText}>采集血压</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={{alignItems: 'center', flex: 1}}
+            activeOpacity={0.7}
+            onPress={() => {
+              navigation.navigate('Signature');
+            }}
+          >
+            <AntDesign name={'thunderbolt'} size={28} color={'#2080F0'} />
+            <Text style={styles.bigText}>测试</Text>
+          </TouchableOpacity>
 
-          <View style={{alignItems: 'center', flex: 1}}></View>
           <View style={{alignItems: 'center', flex: 1}}></View>
         </View>
 

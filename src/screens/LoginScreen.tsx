@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {StyleSheet, SafeAreaView, View, Text, TouchableOpacity, TextInput, ActivityIndicator} from 'react-native';
+import {StyleSheet, SafeAreaView, View, Text, TouchableOpacity, TextInput, ActivityIndicator, ScrollView} from 'react-native';
 import {CustomIcon} from '@/components/CustomIcon/index';
 import {encryptStr} from '@/utils';
 import {api} from '@/api/request';
@@ -8,17 +8,37 @@ import {useProject} from '@/stores/userProject';
 import {Toast as UseToast} from '@/components/Toast';
 import {AxiosError} from 'axios';
 import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
-export default function Login() {
+export const Login = () => {
   const [toast, setToast] = useState('');
   const {setMyProject} = useProject();
-
   const {setTokenInfo} = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    tel: '17346625362',
+    tel: '13278899378',
     password: '123456',
   });
   const [errors, setErrors] = useState({tel: '', password: ''});
+
+  // 单字段校验
+  const validateField = (name: keyof typeof form, value: string) => {
+    let message = '';
+    if (name === 'tel') {
+      if (!value) {
+        message = '请输入手机号';
+      } else if (!/^1[3-9]\d{9}$/.test(value)) {
+        message = '手机号格式不正确';
+      }
+    }
+    if (name === 'password') {
+      if (!value) {
+        message = '请输入密码';
+      } else if (value.length < 6) {
+        message = '密码长度至少6位';
+      }
+    }
+    setErrors(prev => ({...prev, [name]: message}));
+  };
+
   const validate = () => {
     let valid = true;
     let newErrors = {tel: '', password: ''};
@@ -39,6 +59,7 @@ export default function Login() {
     setErrors(newErrors);
     return valid;
   };
+
   const login = async () => {
     if (validate()) {
       setLoading(true);
@@ -70,12 +91,11 @@ export default function Login() {
     }
   };
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: '#e8ecf4'}}>
+    <ScrollView style={{flex: 1, backgroundColor: '#e8ecf4'}}>
       {toast ? <UseToast message={toast} onClose={() => setToast('')} /> : null}
       <View style={styles.container}>
         <View style={styles.header}>
           <CustomIcon width={80} height={80} style={{marginBottom: 15, marginTop: 15, alignSelf: 'center'}} />
-
           <Text style={styles.title}>
             欢迎登录<Text style={{color: '#2080F0'}}>隆吉安保</Text>
           </Text>
@@ -89,7 +109,10 @@ export default function Login() {
               autoCorrect={false}
               clearButtonMode='while-editing'
               keyboardType='name-phone-pad'
-              onChangeText={tel => setForm({...form, tel})}
+              onChangeText={tel => {
+                setForm({...form, tel});
+                validateField('tel', tel); // ✅ 输入时实时校验
+              }}
               placeholder='请输入手机号'
               placeholderTextColor='#6b7280'
               value={form.tel}
@@ -100,16 +123,18 @@ export default function Login() {
 
           <View style={styles.input}>
             <Text style={styles.inputLabel}>密码</Text>
-
             <TextInput
               autoCorrect={false}
               clearButtonMode='while-editing'
-              onChangeText={password => setForm({...form, password})}
+              onChangeText={password => {
+                setForm({...form, password});
+                validateField('password', password); // ✅ 输入时实时校验
+              }}
               placeholder='请输入密码'
               placeholderTextColor='#6b7280'
               secureTextEntry={true}
               value={form.password}
-              style={[styles.inputControl, errors.tel ? {borderColor: 'red'} : null]}
+              style={[styles.inputControl, errors.password ? {borderColor: 'red'} : null]} // ⚠️ 修正了条件，使用 `errors.password`
             />
             {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
           </View>
@@ -121,9 +146,9 @@ export default function Login() {
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {

@@ -22,6 +22,8 @@ class MainApplication : Application(), ReactApplication {
                     // 不能自动链接的包可以在这里手动添加，例如：
                     add(com.changhu.mylocation.MyLocationPackage())
                     add(com.changhu.mylocation.MyAmapLocationPackage())
+                    add(com.changhu.myVideo.MyVideoPackage())
+
                 }
 
             override fun getJSMainModuleName(): String = "index"
@@ -43,7 +45,7 @@ class MainApplication : Application(), ReactApplication {
             load()
         }
         // 隐私合规：告知用户（第一个参数为context）
-        AMapLocationClient.updatePrivacyShow(this,true,true)
+        AMapLocationClient.updatePrivacyShow(this, true, true)
         // 用户同意隐私协议
         AMapLocationClient.updatePrivacyAgree(this, true)
     }

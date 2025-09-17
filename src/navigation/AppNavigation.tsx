@@ -5,7 +5,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {AntDesign} from '@react-native-vector-icons/ant-design';
 import SplashScreen from '@/screens/SplashScreen';
-import LoginScreen from '@/screens/LoginScreen';
+import {Login} from '@/screens/LoginScreen';
 import {useAuthStore} from '@/stores/auth';
 import {RootStackParamList} from './types';
 import {Home} from '@/screens/Tabs/Home';
@@ -108,7 +108,7 @@ export function AppNavigation() {
           ))}
         </>
       ) : (
-        <RootStack.Screen name='Login' component={LoginScreen} options={{headerShown: false}} />
+        <RootStack.Screen name='Login' component={Login} options={{headerShown: false}} />
       )}
     </RootStack.Navigator>
   );

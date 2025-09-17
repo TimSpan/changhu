@@ -20,4 +20,5 @@ export type RootStackParamList = {
   BloodForm: {params: User};
 
   ScanCamera: undefined;
+  Signature: undefined;
 };

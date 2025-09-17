@@ -11,6 +11,8 @@ import {useProject} from '@/stores/userProject';
 import LoadingOverlay from '../../../components/LoadingOverlay';
 import {DialogWithCustom} from '../../../components/DialogWithCustom';
 import {User} from './type';
+import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
+import {AxiosError} from 'axios';
 // 屏幕中间虚线框的尺寸
 const BOX_WIDTH = 250;
 const BOX_HEIGHT = 350;
@@ -226,8 +228,8 @@ export function FaceRecognitionPunch({navigation}: any) {
         } catch (error) {
           console.log('❌ ~ takePicture ~ error:', error);
           // @ts-ignore
-
-          ConfirmAlert.alert('提示', error.message, [
+          const err = error as AxiosError<JsonResult<any>>;
+          ConfirmAlert.alert('提示', err.message, [
             {
               text: '确定',
               onPress: () => {

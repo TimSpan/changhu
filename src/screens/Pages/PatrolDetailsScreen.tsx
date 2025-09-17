@@ -1,10 +1,10 @@
-import {ActivityIndicator, Dimensions, Image, NativeModules, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Dimensions, Image, NativeModules, ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
 import {TopMessage} from '../components/TopMessage';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '@/navigation/types';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import Video from 'react-native-video';
+import Video, {ViewType} from 'react-native-video';
 import {takeMediaUpload} from '@/components/TakeMedia';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import {api} from '@/api/request';
@@ -12,8 +12,14 @@ import {useProject} from '@/stores/userProject';
 import {StackActions} from '@react-navigation/native';
 import CustomInput from '@/components/CustomInput';
 import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
-
+import {AxiosError} from 'axios';
 const {width} = Dimensions.get('window');
+// import {requireNativeComponent} from 'react-native';
+// interface MyVideoViewProps {
+//   style?: ViewStyle; // 支持 style
+//   videoUri: string | null; // 你自定义的属性
+// }
+// const MyVideoView = requireNativeComponent<MyVideoViewProps>('MyVideoView');
 type Props = NativeStackScreenProps<RootStackParamList, 'PatrolDetails'>;
 export const PatrolDetails = ({route, navigation}: Props) => {
   // console.log('是否扫码页跳转过来', route.params.isScan);
@@ -79,8 +85,8 @@ export const PatrolDetails = ({route, navigation}: Props) => {
         },
       ]);
     } catch (error) {
-      // @ts-ignore
-      ConfirmAlert.alert('提示', error?.message, [{text: '确定', onPress: () => {}}]);
+      const err = error as AxiosError<JsonResult<any>>;
+      ConfirmAlert.alert('提示', err?.message, [{text: '确定', onPress: () => {}}]);
     } finally {
       setLoading(false);
     }
@@ -127,7 +133,7 @@ export const PatrolDetails = ({route, navigation}: Props) => {
 
   return (
     <View style={{flex: 1}}>
-      <ScrollView style={{flex: 1, backgroundColor: '#ccc'}}>
+      <ScrollView removeClippedSubviews={false} style={{flex: 1, backgroundColor: '#ccc'}}>
         <TopMessage id={route.params.id} type={pageType} />
 
         {pageType === 1 && (
@@ -185,16 +191,28 @@ export const PatrolDetails = ({route, navigation}: Props) => {
                   <Ionicons name={'videocam-outline'} size={50} color={'#aaa'} />
                 </TouchableOpacity>
               </View>
-              <View>
-                {videoUri && (
-                  <Video
-                    source={{uri: videoUri}}
-                    style={{width: 150, height: 100}}
-                    controls={true} // 显示播放控制条
-                    resizeMode='contain'
-                  />
-                )}
-              </View>
+              {/* （在 ScrollView 里，Video 把其他元素遮住）就是因为默认的 surfaceView 会盖住 RN UI。 */}
+              {/* useTextureView 已经弃用 */}
+              {/* viewType="surfaceView"（默认） → 性能好，但会盖住其他 RN 元素，导致你遇到的 bug。 */}
+              {/* viewType="textureView" → 可组合在 RN UI 层里，解决遮挡问题（推荐）。 */}
+              {/* viewType="secureView" → 防录屏、防截屏的场景才用。 */}
+
+              {videoUri && (
+                <Video
+                  source={{uri: videoUri}}
+                  style={{width: '100%', aspectRatio: 16 / 9}}
+                  controls={true} // 显示播放控制条
+                  resizeMode='contain'
+                  viewType={ViewType.TEXTURE}
+                />
+              )}
+
+              {/* 原生控件、显示更加不行、更加离谱 */}
+              {/* {videoUri && (
+                <View style={{width: 300, height: 200}}>
+                  <MyVideoView style={{flex: 1}} videoUri={videoUri} />
+                </View>
+              )} */}
 
               <View>
                 <Text style={styles.bigText}>备注：</Text>
