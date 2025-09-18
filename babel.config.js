@@ -1,7 +1,7 @@
 module.exports = {
-  presets: ['module:@react-native/babel-preset'],
+  presets: ['babel-preset-expo'],
   // 也可以用 metro 的 preset，看你项目需要
-  // presets: ['module:metro-react-native-babel-preset'],
+  // presets: ['babel-preset-expo'],
 
   plugins: [
     [

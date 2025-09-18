@@ -1,4 +1,13 @@
 {
   "name": "changhu",
-  "displayName": "changhu"
+  "displayName": "changhu",
+  "plugins": [
+    [
+      "expo-video",
+      {
+        "supportsBackgroundPlayback": true, //支持后台播放
+        "supportsPictureInPicture": true //支持画中画
+      }
+    ]
+  ],
 }

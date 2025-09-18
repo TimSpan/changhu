@@ -1,4 +1,5 @@
-import {ActivityIndicator, Dimensions, Image, NativeModules, ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {useVideoPlayer, VideoView} from 'expo-video';
+import {ActivityIndicator, Button, Dimensions, Image, NativeModules, ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
 import {TopMessage} from '../components/TopMessage';
 import {useEffect, useRef, useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
@@ -13,6 +14,7 @@ import {StackActions} from '@react-navigation/native';
 import CustomInput from '@/components/CustomInput';
 import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
 import {AxiosError} from 'axios';
+import {useEvent} from 'expo';
 const {width} = Dimensions.get('window');
 // import {requireNativeComponent} from 'react-native';
 // interface MyVideoViewProps {
@@ -24,6 +26,12 @@ type Props = NativeStackScreenProps<RootStackParamList, 'PatrolDetails'>;
 export const PatrolDetails = ({route, navigation}: Props) => {
   // console.log('是否扫码页跳转过来', route.params.isScan);
   // console.log('巡逻点id', route.params.id);
+  // 初始化视频播放器
+  // const {player, status, play, pause, seekTo} = useVideoPlayer({
+  //   source: {uri: videoUri}, // 视频地址
+  //   shouldPlay: false,       // 初始不播放
+  //   isLooping: false,
+  // });
 
   const pageType = route.params.type;
   const {myProject} = useProject();
@@ -49,6 +57,11 @@ export const PatrolDetails = ({route, navigation}: Props) => {
   const [imgList, setImgList] = useState<string[]>([]);
   const [imgKeyList, setImgKeyList] = useState<string[]>([]);
   const [videoUri, setVideoUri] = useState<string | null>(null);
+  const player = useVideoPlayer(videoUri, player => {
+    player.loop = true;
+    player.play();
+  });
+  const {isPlaying} = useEvent(player, 'playingChange', {isPlaying: player.playing});
   const [videoKey, setVideoKey] = useState<string | null>(null);
   const [remark, setRemark] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -197,7 +210,7 @@ export const PatrolDetails = ({route, navigation}: Props) => {
               {/* viewType="textureView" → 可组合在 RN UI 层里，解决遮挡问题（推荐）。 */}
               {/* viewType="secureView" → 防录屏、防截屏的场景才用。 */}
 
-              {videoUri && (
+              {/* {videoUri && (
                 <Video
                   source={{uri: videoUri}}
                   style={{width: '100%', aspectRatio: 16 / 9}}
@@ -205,7 +218,23 @@ export const PatrolDetails = ({route, navigation}: Props) => {
                   resizeMode='contain'
                   viewType={ViewType.TEXTURE}
                 />
-              )}
+              )} */}
+
+              <View style={styles.contentContainer}>
+                <VideoView surfaceType='textureView' style={styles.video} player={player} allowsFullscreen allowsPictureInPicture />
+                <View style={styles.controlsContainer}>
+                  <Button
+                    title={isPlaying ? '暂停' : '播放'}
+                    onPress={() => {
+                      if (isPlaying) {
+                        player.pause();
+                      } else {
+                        player.play();
+                      }
+                    }}
+                  />
+                </View>
+              </View>
 
               {/* 原生控件、显示更加不行、更加离谱 */}
               {/* {videoUri && (
@@ -279,5 +308,19 @@ const styles = StyleSheet.create({
     width: 100,
     marginLeft: 10,
     borderRadius: 10,
+  },
+  contentContainer: {
+    flex: 1,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 50,
+  },
+  video: {
+    width: 350,
+    height: 275,
+  },
+  controlsContainer: {
+    padding: 10,
   },
 });
