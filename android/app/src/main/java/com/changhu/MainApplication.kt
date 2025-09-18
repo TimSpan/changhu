@@ -20,7 +20,6 @@ class MainApplication : Application(), ReactApplication {
             override fun getPackages(): List<ReactPackage> =
                 PackageList(this).packages.apply {
                     // 不能自动链接的包可以在这里手动添加，例如：
-                    add(com.changhu.mylocation.MyLocationPackage())
                     add(com.changhu.mylocation.MyAmapLocationPackage())
                     add(com.changhu.myVideo.MyVideoPackage())
 
