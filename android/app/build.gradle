@@ -2,79 +2,22 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
-/**
- * This is the configuration block to customize your React Native Android app.
- * By default you don't need to apply any configuration, just uncomment the lines you need.
- */
 react {
-    /* Folders */
-    //   The root of your project, i.e. where "package.json" lives. Default is '../..'
-    // root = file("../../")
-    //   The folder where the react-native NPM package is. Default is ../../node_modules/react-native
-    // reactNativeDir = file("../../node_modules/react-native")
-    //   The folder where the react-native Codegen package is. Default is ../../node_modules/@react-native/codegen
-    // codegenDir = file("../../node_modules/@react-native/codegen")
-    //   The cli.js file which is the React Native CLI entrypoint. Default is ../../node_modules/react-native/cli.js
-    // cliFile = file("../../node_modules/react-native/cli.js")
-
-    /* Variants */
-    //   The list of variants to that are debuggable. For those we're going to
-    //   skip the bundling of the JS bundle and the assets. By default is just 'debug'.
-    //   If you add flavors like lite, prod, etc. you'll have to list your debuggableVariants.
-    // debuggableVariants = ["liteDebug", "prodDebug"]
-
-    /* Bundling */
-    //   A list containing the node command and its flags. Default is just 'node'.
-    // nodeExecutableAndArgs = ["node"]
-    //
-    //   The command to run when bundling. By default is 'bundle'
-    // bundleCommand = "ram-bundle"
-    //
-    //   The path to the CLI configuration file. Default is empty.
-    // bundleConfig = file(../rn-cli.config.js)
-    //
-    //   The name of the generated asset file containing your JS bundle
-    // bundleAssetName = "MyApplication.android.bundle"
-    //
-    //   The entry file for bundle generation. Default is 'index.android.js' or 'index.js'
-    // entryFile = file("../js/MyApplication.android.js")
-    //
-    //   A list of extra flags to pass to the 'bundle' commands.
-    //   See https://github.com/react-native-community/cli/blob/main/docs/commands.md#bundle
-    // extraPackagerArgs = []
-
-    /* Hermes Commands */
-    //   The hermes compiler command to run. By default it is 'hermesc'
-    // hermesCommand = "$rootDir/my-custom-hermesc/bin/hermesc"
-    //
-    //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
-    // hermesFlags = ["-O", "-output-source-map"]
+  
 
     /* Autolinking */
     autolinkLibrariesWithApp()
-    //
+    //不走expo 打包 走Rn CLi打包
     // Added by install-expo-modules
-    entryFile = file(["node", "-e", "require('expo/scripts/resolveAppEntry')", rootDir.getAbsoluteFile().getParentFile().getAbsolutePath(), "android", "absolute"].execute(null, rootDir).text.trim())
-    cliFile = new File(["node", "--print", "require.resolve('@expo/cli')"].execute(null, rootDir).text.trim())
-    bundleCommand = "export:embed"
+    // entryFile = file(["node", "-e", "require('expo/scripts/resolveAppEntry')", rootDir.getAbsoluteFile().getParentFile().getAbsolutePath(), "android", "absolute"].execute(null, rootDir).text.trim())
+    // cliFile = new File(["node", "--print", "require.resolve('@expo/cli')"].execute(null, rootDir).text.trim())
+    // bundleCommand = "export:embed"
 }
 
-/**
- * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
- */
+
 def enableProguardInReleaseBuilds = false
 
-/**
- * The preferred build flavor of JavaScriptCore (JSC)
- *
- * For example, to use the international variant, you can use:
- * `def jscFlavor = io.github.react-native-community:jsc-android-intl:2026004.+`
- *
- * The international variant includes ICU i18n library and necessary data
- * allowing to use e.g. `Date.toLocaleString` and `String.localeCompare` that
- * give correct results when using with locales other than en-US. Note that
- * this variant is about 6MiB larger per architecture than default.
- */
+
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 android {
@@ -97,6 +40,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags "-std=c++17" //给编译器传递参数。这里是 -std=c++17，表示用 C++17 标准来编译。有些库（比如 Reanimated）里会用到 C++17 的特性，否则编译会报错。
+                arguments "-DANDROID_STL=c++_shared"  // 因为很多 RN 库需要共享 STL，否则可能出现 so 链接冲突。
                 // 👇 在这里传递参数
                 // arguments "-DANDROID_ABI=arm64-v8a" 
                 // arguments "-DANDROID_ABI=arm64-v8a;armeabi-v7a"
@@ -108,7 +52,8 @@ android {
     //   这是控制 最终 APK 的打包方式 的。
     splits { //splits：Gradle 的功能，允许你把一个 APK 拆成多个不同的变体，比如不同的 ABI、屏幕密度。
         abi { //abi {}：针对 CPU 架构（Application Binary Interface）。
-            enable true //开启 ABI 拆分功能
+            // enable true //开启 ABI 拆分功能
+            enable project.hasProperty("splitApk") // 只在发版时手动加参数启用
             reset() // 清掉默认的 ABI
             include "arm64-v8a", "armeabi-v7a"  //指定只打 xxx 的 APK。
             universalApk true  // 如果设为 true，Gradle 会再生成一个 universal APK（里面包含所有 ABI 的 so 库）。那个 APK 非常大（几十 MB），通常只用于某些应用市场（比如华为、小米要求的“全架构支持”）。你这里设为 false，所以只会生成 arm64-v8a 的单一 APK，体积最小。
@@ -145,10 +90,15 @@ android {
             // 🚫 唯一的影响是：你失去了 lint 对 潜在问题的扫描（比如无用资源、可能的兼容性问题）。
             // 常见做法：在 RN 项目里，大部分团队都会直接关掉 release lint，因为 RN 本身依赖的库太多，lint 经常误报或阻塞构建。
             // 👉 所以放心用，不会影响产物，只是少了静态检查。
-            lintOptions {
+            // RN 社区常见写法，但 lintOptions 在 AGP 8+ 已经被废弃，用 lint {} 替代：
+            lint {
                 checkReleaseBuilds false
                 abortOnError false
             }
+            // lintOptions {
+            //     checkReleaseBuilds false
+            //     abortOnError false
+            // }
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.release
@@ -163,9 +113,9 @@ android {
 
 dependencies {
 
-//    implementation fileTree(includes: ['*.jar'],dir: 'libs')
-//    implementation 'com.amap.api:location:latest.integration'  // ⚡ 高德定位 SDK
-    // The version of react-native is set by the React Native Gradle Plugin
+
+    //    implementation 'com.amap.api:location:latest.integration'  // ⚡ 高德定位 SDK
+    
     implementation files('libs/AMap_Location_V6.5.0_20250804.jar')// ⚡ 高德定位 SDK 走本地
     implementation("com.facebook.react:react-android")
     implementation 'com.google.android.gms:play-services-location:21.3.0'

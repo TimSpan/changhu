@@ -1,6 +1,5 @@
 {
   "name": "changhu",
-  "displayName": "changhu",
   "plugins": [
     [
       "expo-video",
