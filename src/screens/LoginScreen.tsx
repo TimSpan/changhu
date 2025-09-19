@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {StyleSheet, SafeAreaView, View, Text, TouchableOpacity, TextInput, ActivityIndicator, ScrollView} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity, TextInput, ActivityIndicator, ScrollView} from 'react-native';
 import {CustomIcon} from '@/components/CustomIcon/index';
 import {encryptStr} from '@/utils';
 import {api} from '@/api/request';

@@ -1,7 +1,6 @@
 import {api} from '@/api/request';
 import {useEffect, useState} from 'react';
 import {Ionicons} from '@react-native-vector-icons/ionicons';
-import Video from 'react-native-video';
 import {useProject} from '@/stores/userProject';
 import {ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import EventTypeBottomSheet from '@/components/EventTypeBottomSheet';
@@ -9,6 +8,7 @@ import LoadingOverlay from '@/components/LoadingOverlay';
 import {takeMediaUpload} from '@/components/TakeMedia';
 import CustomInput from '@/components/CustomInput';
 import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
+import {useVideoPlayer, VideoView} from 'expo-video';
 const {width} = Dimensions.get('window');
 export const ReportScreen = () => {
   const {myProject} = useProject();
@@ -23,7 +23,10 @@ export const ReportScreen = () => {
   const [objectKey, setObjectKey] = useState<string[]>([]);
   const [videoUri, setVideoUri] = useState<string | null>(null);
   const [videoObjectKey, setVideoObjectKey] = useState<string | null>(null);
-
+  const player = useVideoPlayer(videoUri, player => {
+    player.loop = true;
+    player.play();
+  });
   const sysDictPager = async () => {
     const resp = await api.get<Option[]>('/management/sys/dict/sysDictGroupCode', {sysDictGroupCode: 'projectEvent'});
     setEventTypeList(resp.data);
@@ -195,16 +198,10 @@ export const ReportScreen = () => {
           </View>
 
           {videoUri && (
-            <View>
-              <Video
-                source={{uri: videoUri}}
-                style={{width: 150, height: 100}}
-                controls={true} // 显示播放控制条
-                resizeMode='contain'
-              />
+            <View style={styles.contentContainer}>
+              <VideoView surfaceType='textureView' style={styles.video} player={player} allowsFullscreen allowsPictureInPicture />
             </View>
           )}
-
           <View>
             <Text style={styles.bigText}>备注：</Text>
             <CustomInput height={80} value={remark} onChangeText={setRemark} placeholder='请输入备注' />
@@ -285,5 +282,19 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '600',
     color: '#fff',
+  },
+  contentContainer: {
+    flex: 1,
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 50,
+  },
+  video: {
+    width: width,
+    height: 250,
+  },
+  controlsContainer: {
+    padding: 10,
   },
 });

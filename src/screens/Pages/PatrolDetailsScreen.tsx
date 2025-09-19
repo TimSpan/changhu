@@ -5,7 +5,6 @@ import {useEffect, useRef, useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '@/navigation/types';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import Video, {ViewType} from 'react-native-video';
 import {takeMediaUpload} from '@/components/TakeMedia';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import {api} from '@/api/request';
@@ -16,22 +15,12 @@ import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
 import {AxiosError} from 'axios';
 import {useEvent} from 'expo';
 const {width} = Dimensions.get('window');
-// import {requireNativeComponent} from 'react-native';
-// interface MyVideoViewProps {
-//   style?: ViewStyle; // 支持 style
-//   videoUri: string | null; // 你自定义的属性
-// }
+
 // const MyVideoView = requireNativeComponent<MyVideoViewProps>('MyVideoView');
 type Props = NativeStackScreenProps<RootStackParamList, 'PatrolDetails'>;
 export const PatrolDetails = ({route, navigation}: Props) => {
   // console.log('是否扫码页跳转过来', route.params.isScan);
   // console.log('巡逻点id', route.params.id);
-  // 初始化视频播放器
-  // const {player, status, play, pause, seekTo} = useVideoPlayer({
-  //   source: {uri: videoUri}, // 视频地址
-  //   shouldPlay: false,       // 初始不播放
-  //   isLooping: false,
-  // });
 
   const pageType = route.params.type;
   const {myProject} = useProject();
@@ -191,7 +180,6 @@ export const PatrolDetails = ({route, navigation}: Props) => {
                 </ScrollView>
               )}
 
-              {/* 视频： */}
               <View style={{flexDirection: 'row', marginBottom: 10}}>
                 <Text style={styles.bigText}>视频：</Text>
                 <TouchableOpacity
@@ -204,44 +192,12 @@ export const PatrolDetails = ({route, navigation}: Props) => {
                   <Ionicons name={'videocam-outline'} size={50} color={'#aaa'} />
                 </TouchableOpacity>
               </View>
-              {/* （在 ScrollView 里，Video 把其他元素遮住）就是因为默认的 surfaceView 会盖住 RN UI。 */}
-              {/* useTextureView 已经弃用 */}
-              {/* viewType="surfaceView"（默认） → 性能好，但会盖住其他 RN 元素，导致你遇到的 bug。 */}
-              {/* viewType="textureView" → 可组合在 RN UI 层里，解决遮挡问题（推荐）。 */}
-              {/* viewType="secureView" → 防录屏、防截屏的场景才用。 */}
 
-              {/* {videoUri && (
-                <Video
-                  source={{uri: videoUri}}
-                  style={{width: '100%', aspectRatio: 16 / 9}}
-                  controls={true} // 显示播放控制条
-                  resizeMode='contain'
-                  viewType={ViewType.TEXTURE}
-                />
-              )} */}
-
-              <View style={styles.contentContainer}>
-                <VideoView surfaceType='textureView' style={styles.video} player={player} allowsFullscreen allowsPictureInPicture />
-                <View style={styles.controlsContainer}>
-                  <Button
-                    title={isPlaying ? '暂停' : '播放'}
-                    onPress={() => {
-                      if (isPlaying) {
-                        player.pause();
-                      } else {
-                        player.play();
-                      }
-                    }}
-                  />
+              {videoUri && (
+                <View style={styles.contentContainer}>
+                  <VideoView surfaceType='textureView' style={styles.video} player={player} allowsFullscreen allowsPictureInPicture />
                 </View>
-              </View>
-
-              {/* 原生控件、显示更加不行、更加离谱 */}
-              {/* {videoUri && (
-                <View style={{width: 300, height: 200}}>
-                  <MyVideoView style={{flex: 1}} videoUri={videoUri} />
-                </View>
-              )} */}
+              )}
 
               <View>
                 <Text style={styles.bigText}>备注：</Text>
@@ -317,8 +273,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 50,
   },
   video: {
-    width: 350,
-    height: 275,
+    width: width,
+    height: 250,
   },
   controlsContainer: {
     padding: 10,
