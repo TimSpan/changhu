@@ -24,7 +24,7 @@ class MainApplication : Application(), ReactApplication {
                 PackageList(this).packages.apply {
                     // 不能自动链接的包可以在这里手动添加，例如：
                     add(com.changhu.mylocation.MyAmapLocationPackage())
-                    add(com.changhu.myVideo.MyVideoPackage())
+                   
 
                 }
 
