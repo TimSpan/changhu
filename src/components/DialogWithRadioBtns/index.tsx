@@ -60,6 +60,6 @@ const styles = StyleSheet.create({
   },
   text: {
     paddingLeft: 8,
-    fontSize: 22,
+    fontSize: 20,
   },
 });

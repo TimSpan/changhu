@@ -114,9 +114,9 @@ android {
 dependencies {
 
 
-    //    implementation 'com.amap.api:location:latest.integration'  // ⚡ 高德定位 SDK
+    implementation 'com.amap.api:location:latest.integration'  // ⚡ 高德定位 SDK
     
-    implementation files('libs/AMap_Location_V6.5.0_20250804.jar')// ⚡ 高德定位 SDK 走本地
+    // implementation files('libs/AMap_Location_V6.5.0_20250804.jar')// ⚡ 高德定位 SDK 走本地
     implementation("com.facebook.react:react-android")
     implementation 'com.google.android.gms:play-services-location:21.3.0'
 

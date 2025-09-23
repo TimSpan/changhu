@@ -1,10 +1,11 @@
-import {NativeModules, PermissionsAndroid, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {NativeModules, PermissionsAndroid, Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {AntDesign} from '@react-native-vector-icons/ant-design';
 import {Divider} from 'react-native-paper';
 import {RootStackParamList} from '@/navigation/types';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useEffect} from 'react';
 import {Camera} from 'react-native-vision-camera';
+import {SafeAreaView} from 'react-native-safe-area-context';
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 interface Props {
@@ -41,7 +42,12 @@ export const Center = ({navigation}: Props) => {
     })();
   }, []);
   return (
-    <ScrollView style={{flex: 1}}>
+    <SafeAreaView style={styles.container}>
+      {/* 状态栏配置 */}
+      <StatusBar
+        barStyle='dark-content' // dark-content=黑色文字，light-content=白色文字
+        backgroundColor='#fff' // 安卓下状态栏背景色
+      />
       <View style={{padding: 16}}>
         <Text
           style={{
@@ -102,7 +108,7 @@ export const Center = ({navigation}: Props) => {
             <AntDesign name={'thunderbolt'} size={28} color={'#2080F0'} />
             <Text style={styles.bigText}>采集血压</Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={{alignItems: 'center', flex: 1}}
             activeOpacity={0.7}
             onPress={() => {
@@ -111,8 +117,8 @@ export const Center = ({navigation}: Props) => {
           >
             <AntDesign name={'thunderbolt'} size={28} color={'#2080F0'} />
             <Text style={styles.bigText}>测试</Text>
-          </TouchableOpacity>
-
+          </TouchableOpacity> */}
+          <View style={{alignItems: 'center', flex: 1}}></View>
           <View style={{alignItems: 'center', flex: 1}}></View>
         </View>
 
@@ -122,12 +128,12 @@ export const Center = ({navigation}: Props) => {
           <View style={{alignItems: 'center', flex: 1}}></View>
         </View>
       </View>
-    </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: '#ccc'},
+  container: {flex: 1, backgroundColor: '#fff'},
 
   bigText: {
     fontSize: 22,

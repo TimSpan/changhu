@@ -1,5 +1,5 @@
 import {useVideoPlayer, VideoView} from 'expo-video';
-import {ActivityIndicator, Button, Dimensions, Image, NativeModules, ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {ActivityIndicator, Button, Dimensions, Image, Modal, NativeModules, ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
 import {TopMessage} from '../components/TopMessage';
 import {useEffect, useRef, useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
@@ -14,6 +14,8 @@ import CustomInput from '@/components/CustomInput';
 import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
 import {AxiosError} from 'axios';
 import {useEvent} from 'expo';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {ImagePreview} from '@/components/ImagePreview';
 const {width} = Dimensions.get('window');
 
 // const MyVideoView = requireNativeComponent<MyVideoViewProps>('MyVideoView');
@@ -21,7 +23,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'PatrolDetails'>;
 export const PatrolDetails = ({route, navigation}: Props) => {
   // console.log('是否扫码页跳转过来', route.params.isScan);
   // console.log('巡逻点id', route.params.id);
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [initialIndex, setInitialIndex] = useState(0);
   const pageType = route.params.type;
   const {myProject} = useProject();
   const [center, setCenter] = useState<{
@@ -101,7 +104,7 @@ export const PatrolDetails = ({route, navigation}: Props) => {
     try {
       setTitle('视频上传中...');
       setActivityLoading(true);
-      const res = await takeMediaUpload('video', 'your-parent-dir');
+      const res = await takeMediaUpload('video', 'patrol');
       setVideoUri(res.previewUrl);
       setVideoKey(res.objectKey);
     } catch (error) {
@@ -119,7 +122,7 @@ export const PatrolDetails = ({route, navigation}: Props) => {
     try {
       setTitle('照片上传中...');
       setActivityLoading(true);
-      const res = await takeMediaUpload('photo', 'your-parent-dir');
+      const res = await takeMediaUpload('photo', 'patrol');
       setImgList(prev => [...prev, res.previewUrl]);
       setImgKeyList(prev => [...prev, res.objectKey]);
     } catch (error) {
@@ -166,6 +169,10 @@ export const PatrolDetails = ({route, navigation}: Props) => {
                   {imgList.map((uri, index) => (
                     <TouchableOpacity
                       key={index}
+                      onPress={() => {
+                        setModalVisible(true);
+                        setInitialIndex(index);
+                      }}
                       onLongPress={() => {
                         ConfirmAlert.alert('删除确认', '确定要删除这张图片吗？?', [
                           {text: '取消', style: 'cancel', onPress: () => {}},
@@ -207,7 +214,13 @@ export const PatrolDetails = ({route, navigation}: Props) => {
           </View>
         )}
       </ScrollView>
-
+      <Modal visible={modalVisible} animationType='slide' onRequestClose={() => setModalVisible(false)}>
+        <GestureHandlerRootView>
+          <View style={{flex: 1}}>
+            <ImagePreview imageList={imgList} initialIndex={initialIndex}></ImagePreview>
+          </View>
+        </GestureHandlerRootView>
+      </Modal>
       {pageType === 1 && (
         <TouchableOpacity onPress={handleSubmit}>
           <View style={styles.submitBtn}>{loading ? <ActivityIndicator color='#fff' /> : <Text style={styles.submitBtnText}>确认打卡</Text>}</View>

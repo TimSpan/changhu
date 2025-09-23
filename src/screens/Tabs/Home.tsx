@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react';
 import {ActivityIndicator, PermissionsAndroid, Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
+import {LinearGradient} from 'expo-linear-gradient';
 import dayjs from 'dayjs';
 import WebView from 'react-native-webview';
 import {NativeModules} from 'react-native';

@@ -22,6 +22,8 @@ import Svg, {Line} from 'react-native-svg';
 import CustomInput from '@/components/CustomInput';
 import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
 import {LoadingModal} from '@/components/LoadingModal';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {ImagePreview} from '@/components/ImagePreview';
 type Props = NativeStackScreenProps<RootStackParamList, 'BloodForm'>;
 const {width, height} = Dimensions.get('window');
 const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
@@ -30,6 +32,7 @@ export function BloodFormScreen({route, navigation}: Props) {
   console.log('route.params', route.params);
   useSkipBack<RootStackParamList>(2, 'BloodForm');
   const {myProject} = useProject();
+  const [initialIndex, setInitialIndex] = useState(0);
   const [visible, setVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [title, setTitle] = useState<string>('照片上传中...');
@@ -164,6 +167,7 @@ export function BloodFormScreen({route, navigation}: Props) {
     });
   }
   const canvasRef = useRef<any>(null);
+  const [imageModalVisible, setImageModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [signatures, setSignatures] = useState<string[]>([]);
   const [IMAGE_WIDTH, setIMAGE_WIDTH] = useState<number>(0);
@@ -188,7 +192,7 @@ export function BloodFormScreen({route, navigation}: Props) {
   async function uploadSignPhoto(fileName: string, uri: string): Promise<UploadResult> {
     try {
       const uploadName = fileName;
-      const {objectKey, preSignedUrl} = await getPreSignedUrl(uploadName, 'sign');
+      const {objectKey, preSignedUrl} = await getPreSignedUrl(uploadName, 'blood-pressure');
       const res = await fetch(uri);
       const blob = await res.blob();
       await fetch(preSignedUrl, {
@@ -277,6 +281,10 @@ export function BloodFormScreen({route, navigation}: Props) {
 
               {face && (
                 <TouchableOpacity
+                  onPress={() => {
+                    setImageModalVisible(true);
+                    setInitialIndex(0);
+                  }}
                   onLongPress={() => {
                     ConfirmAlert.alert('删除确认', '确定要删除这张图片吗？', [
                       {text: '取消', style: 'cancel', onPress: () => {}},
@@ -499,6 +507,11 @@ export function BloodFormScreen({route, navigation}: Props) {
           </View>
         </View>
       </Modal>
+      <Modal visible={imageModalVisible} animationType='slide' onRequestClose={() => setImageModalVisible(false)}>
+        <GestureHandlerRootView>
+          <View style={{flex: 1}}>{face && <ImagePreview imageList={[face]} initialIndex={initialIndex}></ImagePreview>}</View>
+        </GestureHandlerRootView>
+      </Modal>
     </View>
   );
 }
@@ -527,7 +540,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   submitBtnText: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '600',
     color: '#fff',
   },
@@ -539,7 +552,7 @@ const styles = StyleSheet.create({
   },
   bigText: {
     // width: 60,
-    fontSize: 22,
+    fontSize: 20,
   },
 
   upLoadStyle: {
@@ -561,7 +574,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   modal: {flex: 1, backgroundColor: 'white'},
-  title: {fontSize: 24, textAlign: 'center', margin: 10},
+  title: {fontSize: 20, textAlign: 'center', margin: 10},
   footer: {flexDirection: 'row'},
 
   signBtn: {
@@ -573,12 +586,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   signBtnText: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '600',
     color: '#fff',
   },
   requiredStyle: {
-    fontSize: 22,
+    fontSize: 20,
     color: '#FF0000',
   },
 });

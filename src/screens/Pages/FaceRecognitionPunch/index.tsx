@@ -13,10 +13,12 @@ import {DialogWithCustom} from '../../../components/DialogWithCustom';
 import {User} from './type';
 import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
 import {AxiosError} from 'axios';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 // 屏幕中间虚线框的尺寸
 const BOX_WIDTH = 250;
 const BOX_HEIGHT = 350;
 export function FaceRecognitionPunch({navigation}: any) {
+  const insets = useSafeAreaInsets(); //能同时支持 iOS 刘海屏、Android 刘海、平板等情况：
   const processingRef = useRef(true);
   const stopFrameProcessing = () => {
     processingRef.current = false;
@@ -311,7 +313,7 @@ export function FaceRecognitionPunch({navigation}: any) {
   const boxBottom = boxTop + BOX_HEIGHT;
   if (!isFocused) return null;
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={{flex: 1}}>
         <Camera
           // Camera 是 Native 组件，有些平台（尤其是 Android）里，Camera 的原生层级会比 RN 的 Modal 高
@@ -340,20 +342,8 @@ export function FaceRecognitionPunch({navigation}: any) {
         <Animated.View style={boundingBoxStyle} />
       </View>
 
-      <View
-        style={{
-          position: 'absolute',
-          left: boxLeft,
-          top: boxTop,
-          width: BOX_WIDTH,
-          height: BOX_HEIGHT,
-          borderWidth: 2,
-          borderColor: 'white',
-          borderStyle: 'dashed',
-        }}
-      />
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, {top: insets.top}]}
         onPress={async () => {
           setCameraFacing(current => (current === 'front' ? 'back' : 'front'));
         }}
@@ -368,7 +358,18 @@ export function FaceRecognitionPunch({navigation}: any) {
       >
         {showText}
       </Text>
-
+      <View
+        style={{
+          position: 'absolute',
+          left: boxLeft,
+          top: boxTop,
+          width: BOX_WIDTH,
+          height: BOX_HEIGHT,
+          borderWidth: 2,
+          borderColor: 'white',
+          borderStyle: 'dashed',
+        }}
+      />
       <LoadingOverlay visible={activityLoading} title={title} />
 
       <DialogWithCustom
@@ -385,7 +386,7 @@ export function FaceRecognitionPunch({navigation}: any) {
         <Text style={{fontSize: 20, margin: 8}}>姓名：{user?.name}</Text>
         <Text style={{fontSize: 20, margin: 8}}>性别：{user?.sex.label}</Text>
       </DialogWithCustom>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -395,7 +396,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    top: 0,
+    // top: 0,
     left: 0,
     width: 100,
     height: 50,

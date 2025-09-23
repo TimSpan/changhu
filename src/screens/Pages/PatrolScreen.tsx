@@ -3,8 +3,9 @@ import {RootStackParamList} from '@/navigation/types';
 import {useProject} from '@/stores/userProject';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useState, useCallback, useEffect} from 'react';
-import {SafeAreaView, StyleSheet, Text, View, FlatList, RefreshControl, TouchableOpacity} from 'react-native';
+import {StyleSheet, Text, View, FlatList, RefreshControl, TouchableOpacity} from 'react-native';
 import {SecurityMemberType} from './type';
+// import {SafeAreaView} from 'react-native-safe-area-context';
 type Props = NativeStackScreenProps<RootStackParamList>;
 export const PatrolScreen = ({navigation}: Props) => {
   const {myProject} = useProject();
@@ -61,7 +62,7 @@ export const PatrolScreen = ({navigation}: Props) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <FlatList
         data={data}
         keyExtractor={item => item.snowFlakeId}
@@ -77,7 +78,7 @@ export const PatrolScreen = ({navigation}: Props) => {
       >
         <Text style={styles.fabText}>扫码</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 };
 

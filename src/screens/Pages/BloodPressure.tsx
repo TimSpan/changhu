@@ -1,5 +1,6 @@
 import React, {useState, useCallback} from 'react';
-import {SafeAreaView, StyleSheet, Text, View, FlatList, RefreshControl, TouchableOpacity} from 'react-native';
+import {StyleSheet, Text, View, FlatList, RefreshControl, TouchableOpacity} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {Camera} from 'react-native-vision-camera';
 
 interface Item {

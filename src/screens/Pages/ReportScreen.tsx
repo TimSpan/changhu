@@ -2,15 +2,19 @@ import {api} from '@/api/request';
 import {useEffect, useState} from 'react';
 import {Ionicons} from '@react-native-vector-icons/ionicons';
 import {useProject} from '@/stores/userProject';
-import {ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import EventTypeBottomSheet from '@/components/EventTypeBottomSheet';
 import LoadingOverlay from '@/components/LoadingOverlay';
 import {takeMediaUpload} from '@/components/TakeMedia';
 import CustomInput from '@/components/CustomInput';
 import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
 import {useVideoPlayer, VideoView} from 'expo-video';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {ImagePreview} from '@/components/ImagePreview';
 const {width} = Dimensions.get('window');
 export const ReportScreen = () => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [initialIndex, setInitialIndex] = useState(0);
   const {myProject} = useProject();
   const [remark, setRemark] = useState('');
   const [title, setTitle] = useState<string>('照片上传中...');
@@ -23,6 +27,7 @@ export const ReportScreen = () => {
   const [objectKey, setObjectKey] = useState<string[]>([]);
   const [videoUri, setVideoUri] = useState<string | null>(null);
   const [videoObjectKey, setVideoObjectKey] = useState<string | null>(null);
+
   const player = useVideoPlayer(videoUri, player => {
     player.loop = true;
     player.play();
@@ -40,7 +45,7 @@ export const ReportScreen = () => {
     try {
       setTitle('照片上传中...');
       setActivityLoading(true);
-      const res = await takeMediaUpload('photo', 'your-parent-dir');
+      const res = await takeMediaUpload('photo', 'event-report');
       setImgList(prev => [...prev, res.previewUrl]);
       setObjectKey(prev => [...prev, res.objectKey]);
     } catch (error) {
@@ -61,7 +66,7 @@ export const ReportScreen = () => {
     try {
       setTitle('视频上传中...');
       setActivityLoading(true);
-      const res = await takeMediaUpload('video', 'your-parent-dir');
+      const res = await takeMediaUpload('video', 'event-report');
       setVideoUri(res.previewUrl);
       setVideoObjectKey(res.objectKey);
     } catch (error) {
@@ -139,11 +144,11 @@ export const ReportScreen = () => {
           style={styles.top}
         >
           <View style={{flexDirection: 'row'}}>
-            <Text style={{color: '#FF0000', fontSize: 22, marginRight: 10}}>*</Text>
-            {selectedType ? <Text style={{fontSize: 22}}>已选择：{selectedType?.label}</Text> : <Text style={{fontSize: 22}}>选择事件类型</Text>}
+            <Text style={{color: '#FF0000', fontSize: 20, marginRight: 10}}>*</Text>
+            {selectedType ? <Text style={{fontSize: 20}}>已选择：{selectedType?.label}</Text> : <Text style={{fontSize: 20}}>选择事件类型</Text>}
           </View>
 
-          <Ionicons name={'arrow-forward'} size={50} color={'#aaa'} />
+          <Ionicons name={'arrow-forward'} size={30} color={'#aaa'} />
         </TouchableOpacity>
 
         <View style={styles.center}>
@@ -170,6 +175,10 @@ export const ReportScreen = () => {
               {imgList.map((uri, index) => (
                 <TouchableOpacity
                   key={index}
+                  onPress={() => {
+                    setModalVisible(true);
+                    setInitialIndex(index);
+                  }}
                   onLongPress={() => {
                     ConfirmAlert.alert('提示', '确定要删除这张图片吗？', [
                       {text: '取消', style: 'cancel', onPress: () => {}},
@@ -225,6 +234,13 @@ export const ReportScreen = () => {
       </TouchableOpacity>
 
       <LoadingOverlay visible={activityLoading} title={title} />
+      <Modal visible={modalVisible} animationType='slide' onRequestClose={() => setModalVisible(false)}>
+        <GestureHandlerRootView>
+          <View style={{flex: 1}}>
+            <ImagePreview imageList={imgList} initialIndex={initialIndex}></ImagePreview>
+          </View>
+        </GestureHandlerRootView>
+      </Modal>
     </View>
   );
 };
@@ -233,7 +249,7 @@ const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: '#ccc'},
   bigText: {
     width: 120,
-    fontSize: 22,
+    fontSize: 20,
   },
   top: {
     backgroundColor: '#fff',

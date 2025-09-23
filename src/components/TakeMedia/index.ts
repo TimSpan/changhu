@@ -3,7 +3,7 @@ import {launchCamera, MediaType} from 'react-native-image-picker';
 
 /**
  * @type 媒体打开类型
- * @param parentDir 存储目录（例如 your-parent-dir）
+ * @param parentDir 存储目录
  * @returns {Promise<{ objectKey: string, previewUrl: string }>}
  */
 export async function takeMediaUpload(type: MediaType, parentDir: string): Promise<{objectKey: string; previewUrl: string}> {
