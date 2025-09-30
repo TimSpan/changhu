@@ -1,4 +1,4 @@
-import {NativeModules, PermissionsAndroid, Platform, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {NativeModules, PermissionsAndroid, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {AntDesign} from '@react-native-vector-icons/ant-design';
 import {Divider} from 'react-native-paper';
 import {RootStackParamList} from '@/navigation/types';

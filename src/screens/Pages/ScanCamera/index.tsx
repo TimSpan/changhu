@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {useCallback, useRef, useState} from 'react';
-import {Animated, Dimensions, Easing, StyleSheet, View} from 'react-native';
+import {Animated, Dimensions, Easing, StatusBar, StyleSheet, View} from 'react-native';
 import type {Code} from 'react-native-vision-camera';
 import {useCameraDevice, useCodeScanner} from 'react-native-vision-camera';
 import {Camera} from 'react-native-vision-camera';
@@ -13,13 +13,13 @@ import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useFocusEffect, useIsFocused} from '@react-navigation/core';
 import {RootStackParamList} from '@/navigation/types';
 import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
-
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 const {width, height} = Dimensions.get('window');
 const SCAN_WIDTH = width * 0.7; // 扫描线长度
 const SCAN_SIZE = width * 0.7; // 扫描框大小
-
 type Props = NativeStackScreenProps<RootStackParamList>;
 export function CodeScannerPage({navigation}: Props): React.ReactElement {
+  const insets = useSafeAreaInsets();
   const animatedLine = useRef(new Animated.Value(0)).current;
   // 扫描线动画
   React.useEffect(() => {
@@ -110,7 +110,11 @@ export function CodeScannerPage({navigation}: Props): React.ReactElement {
   });
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar
+        barStyle='dark-content' // dark-content=黑色文字，light-content=白色文字
+        backgroundColor='#fff' // 安卓下状态栏背景色
+      />
       {device != null && (
         <>
           <Camera codeScanner={codeScanner} device={device} isActive={isActive} style={StyleSheet.absoluteFill} torch={torch ? 'on' : 'off'} enableZoomGesture={true} />
@@ -127,19 +131,16 @@ export function CodeScannerPage({navigation}: Props): React.ReactElement {
 
       <StatusBarBlurBackground />
 
-      {/* 闪光灯 */}
-      <View style={styles.rightButtonRow}>
+      <View style={[styles.rightButtonRow, {top: insets.top}]}>
         <PressableOpacity style={styles.button} onPress={() => setTorch(!torch)} disabledOpacity={0.4}>
           <Ionicons name={torch ? 'flash' : 'flash-off'} color='white' size={24} />
         </PressableOpacity>
       </View>
 
-      {/* Back Button */}
-      {/* onPress={() => navigation.dispatch(StackActions.pop(1))} */}
-      <PressableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      <PressableOpacity style={[styles.backButton, {top: insets.top}]} onPress={() => navigation.goBack()}>
         <Ionicons name='chevron-back' color='white' size={35} />
       </PressableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -160,12 +161,12 @@ const styles = StyleSheet.create({
   rightButtonRow: {
     position: 'absolute',
     right: SAFE_AREA_PADDING.paddingRight,
-    top: SAFE_AREA_PADDING.paddingTop,
+    // top: SAFE_AREA_PADDING.paddingTop,
   },
   backButton: {
     position: 'absolute',
     left: SAFE_AREA_PADDING.paddingLeft,
-    top: SAFE_AREA_PADDING.paddingTop,
+    // top: SAFE_AREA_PADDING.paddingTop,
   },
 
   overlay: {

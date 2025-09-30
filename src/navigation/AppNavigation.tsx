@@ -12,6 +12,7 @@ import {Home} from '@/screens/Tabs/Home';
 import {Center} from '@/screens/Tabs/Center';
 import {User} from '@/screens/Tabs/User';
 import {useProject} from '@/stores/userProject';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 function HomeStackScreen() {
@@ -59,6 +60,7 @@ function UserStackScreen() {
 }
 
 function MainTabs() {
+  const insets = useSafeAreaInsets(); // 获取安全区
   return (
     <Tab.Navigator
       screenOptions={({route}) => ({
@@ -73,7 +75,10 @@ function MainTabs() {
         tabBarActiveTintColor: '#2080F0',
         tabBarInactiveTintColor: 'gray',
         tabBarLabelStyle: {fontSize: 16}, // 调大字体
-        tabBarStyle: {height: 60}, // 调高整个 tabBar
+        tabBarStyle: {
+          height: 60 + insets.bottom, // 自适应高度
+          paddingBottom: insets.bottom, // 保持图标文字不被遮挡
+        },
       })}
     >
       {/* <Tab.Screen name='home' component={HomeStackScreen} options={{title: '打卡'}} /> */}

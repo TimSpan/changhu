@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, TextInput, ActivityIndicator, ScrollView} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity, TextInput, ActivityIndicator, StatusBar} from 'react-native';
 import {CustomIcon} from '@/components/CustomIcon/index';
 import {encryptStr} from '@/utils';
 import {api} from '@/api/request';
@@ -8,13 +8,14 @@ import {useProject} from '@/stores/userProject';
 import {Toast as UseToast} from '@/components/Toast';
 import {AxiosError} from 'axios';
 import {ConfirmAlert} from '@/components/ConfirmDialog/ConfirmDialogProvider';
+import {SafeAreaView} from 'react-native-safe-area-context';
 export const Login = () => {
   const [toast, setToast] = useState('');
   const {setMyProject} = useProject();
   const {setTokenInfo} = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    tel: '13278899378',
+    tel: '13575126791',
     password: '123456',
   });
   const [errors, setErrors] = useState({tel: '', password: ''});
@@ -72,12 +73,16 @@ export const Login = () => {
         console.log('获取登录信息', res);
         if (res) {
           setTokenInfo(res.data);
-        }
-
-        const result = await api.get<MyProject>('/wechat/common/getMyProject');
-        console.log('我的项目', result);
-        if (result) {
-          setMyProject(result.data);
+          try {
+            const result = await api.get<MyProject>('/wechat/common/getMyProject');
+            console.log('我的项目', result);
+            if (result) {
+              setMyProject(result.data);
+            }
+          } catch (error) {
+            const err = error as AxiosError<JsonResult<any>>;
+            ConfirmAlert.alert('提示', err.message, [{text: '确定', onPress: () => {}}]);
+          }
         }
       } catch (error) {
         const err = error as AxiosError<JsonResult<any>>;
@@ -91,7 +96,11 @@ export const Login = () => {
     }
   };
   return (
-    <ScrollView style={{flex: 1, backgroundColor: '#e8ecf4'}}>
+    <SafeAreaView style={{flex: 1}}>
+      <StatusBar
+        barStyle='dark-content' // dark-content=黑色文字，light-content=白色文字
+        backgroundColor='#fff' // 安卓下状态栏背景色
+      />
       {toast ? <UseToast message={toast} onClose={() => setToast('')} /> : null}
       <View style={styles.container}>
         <View style={styles.header}>
@@ -146,7 +155,7 @@ export const Login = () => {
           </View>
         </View>
       </View>
-    </ScrollView>
+    </SafeAreaView>
   );
 };
 

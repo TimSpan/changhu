@@ -1,3 +1,4 @@
+// 此页面已 暂停使用、暂时废弃
 import React, {useState, useCallback} from 'react';
 import {StyleSheet, Text, View, FlatList, RefreshControl, TouchableOpacity} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';

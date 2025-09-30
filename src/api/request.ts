@@ -17,14 +17,19 @@ class RequestHttp {
       async config => {
         config.headers.set('Client-Type', 'hand_device');
         const tokenInfoJson = (await AsyncStorage.getItem('tokenInfo')) as string;
-        const {
-          state: {tokenInfo},
-        } = JSON.parse(tokenInfoJson);
-        console.log('🍎 ~ RequestHttp ~ constructor ~ tokenInfo:', tokenInfo);
+        try {
+          const {
+            state: {tokenInfo},
+          } = JSON.parse(tokenInfoJson);
+          // console.log('🍎 ~ RequestHttp ~ constructor ~ tokenInfo:', JSON.parse(tokenInfoJson), tokenInfo);
 
-        if (tokenInfo) {
-          config.headers.set(tokenInfo.tokenInfo?.tokenName, tokenInfo.tokenInfo?.tokenValue);
+          if (tokenInfo) {
+            config.headers.set(tokenInfo.tokenInfo?.tokenName, tokenInfo.tokenInfo?.tokenValue);
+          }
+        } catch (error) {
+          console.log('🍎 ~ RequestHttp ~ constructor ~ error:', error);
         }
+
         return config;
       },
       async (error: AxiosError): Promise<string> => {

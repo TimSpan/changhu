@@ -4,6 +4,7 @@ import {LinearGradient} from 'expo-linear-gradient';
 import dayjs from 'dayjs';
 import WebView from 'react-native-webview';
 import {NativeModules} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 export const Home = () => {
   const [center, setCenter] = useState<{
     latitude: number;
@@ -57,8 +58,11 @@ export const Home = () => {
 
   const webRef = useRef<WebView>(null);
   return (
-    <>
-      <StatusBar backgroundColor='#ccc' />
+    <SafeAreaView>
+      <StatusBar
+        barStyle='dark-content' // dark-content=黑色文字，light-content=白色文字
+        backgroundColor='#fff' // 安卓下状态栏背景色
+      />
       <View style={styles.container}>
         <View style={styles.top}>
           {center ? (
@@ -95,7 +99,7 @@ export const Home = () => {
           <ScrollView style={{flex: 1}}></ScrollView>
         </View>
       </View>
-    </>
+    </SafeAreaView>
   );
 };
 const styles = StyleSheet.create({

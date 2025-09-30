@@ -1,7 +1,7 @@
 import {useVideoPlayer, VideoView} from 'expo-video';
-import {ActivityIndicator, Button, Dimensions, Image, Modal, NativeModules, ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {ActivityIndicator, Dimensions, Image, Modal, NativeModules, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {TopMessage} from '../components/TopMessage';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '@/navigation/types';
 import Ionicons from '@react-native-vector-icons/ionicons';
